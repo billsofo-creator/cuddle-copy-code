@@ -3741,6 +3741,9 @@ function updateUI() {
 function showMenu() {
   document.getElementById('main-menu').classList.add('show');
   document.getElementById('instructions').classList.remove('show');
+  const tp = document.getElementById('tutorial-panel');
+  if (tp) tp.style.display = 'none';
+  tutorialActive = false;
   // also hide game-over overlay if present
   const go = document.getElementById('go'); if (go) go.classList.remove('show');
   // Start ambient music after the first user gesture (browser autoplay policy)
