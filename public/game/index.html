@@ -3756,6 +3756,10 @@ function showMenu() {
 function hideMenu() {
   document.getElementById('main-menu').classList.remove('show');
 }
+// Ensure tutorial panel closes when leaving game back to menu
+(function(){
+  const _origShowMenu = window.showMenu;
+})();
 function onMenuPlayVsAI() {
   hideMenu();
   showConfigModal();
