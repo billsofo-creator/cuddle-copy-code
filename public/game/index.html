@@ -4734,6 +4734,13 @@ function showGuestButton() {
 }
 
 async function init() {
+  // Skip auth — go straight into the game as guest
+  const ov = el('auth-overlay');
+  if (ov) ov.classList.add('hidden');
+  if (typeof showMenu === 'function') showMenu();
+  return;
+}
+async function _initDisabled() {
   if (!PK) {
     showGuestButton();
     return;
