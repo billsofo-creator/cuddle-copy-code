@@ -1,0 +1,18 @@
+{
+  "name": "Stellar Tactics — Turn-Based Star Warfare",
+  "short_name": "Stellar Tactics",
+  "description": "Command your fleet, capture star systems, crush the alien warlord. Turn-based strategy across the galaxy.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#010008",
+  "theme_color": "#0a0220",
+  "lang": "en",
+  "categories": ["games", "strategy"],
+  "icons": [
+    { "src": "app-icon.png", "sizes": "192x192",  "type": "image/png", "purpose": "any" },
+    { "src": "app-icon.png", "sizes": "512x512",  "type": "image/png", "purpose": "any" },
+    { "src": "app-icon.png", "sizes": "1024x1024","type": "image/png", "purpose": "any maskable" }
+  ]
+}
