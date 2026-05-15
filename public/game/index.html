@@ -1000,6 +1000,40 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
       </span>
       <span class="arrow">▶</span>
     </button>
+
+    <button class="menu-btn" onclick="startTutorial()">
+      <span class="ico">🎓</span>
+      <span class="lbl">
+        <span class="l1">Tutorial</span>
+        <span class="l2">Step-by-step — learn by playing</span>
+      </span>
+      <span class="arrow">▶</span>
+    </button>
+  </div>
+
+  <!-- Interactive tutorial floating panel -->
+  <div id="tutorial-panel" style="display:none;position:fixed;left:12px;bottom:12px;z-index:250;
+       width:300px;max-width:calc(100vw - 24px);background:linear-gradient(160deg,#1a1340 0%,#0d0a26 100%);
+       border:2px solid rgba(140,100,255,0.6);border-radius:14px;padding:14px 16px;
+       box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 24px rgba(140,100,255,.35);color:#E8EEF7;
+       font-family:inherit;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#B39DDB;">
+        🎓 TUTORIAL · <span id="tut-step-num">1</span>/<span id="tut-step-total">1</span>
+      </div>
+      <button onclick="endTutorial()" style="background:transparent;border:none;color:#7986CB;
+              font-size:16px;cursor:pointer;padding:0 4px;line-height:1;">✖</button>
+    </div>
+    <div id="tut-title" style="font-size:15px;font-weight:800;margin-bottom:6px;color:#FFD54F;"></div>
+    <div id="tut-body" style="font-size:13px;line-height:1.45;color:#E8EEF7;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button id="tut-prev" onclick="tutorialPrev()" style="padding:7px 12px;border-radius:8px;
+              border:1px solid rgba(140,100,255,0.4);background:transparent;color:#B39DDB;
+              font-size:12px;font-weight:700;cursor:pointer;">◀ Back</button>
+      <button id="tut-next" onclick="tutorialNext()" style="padding:7px 14px;border-radius:8px;border:none;
+              background:linear-gradient(180deg,#7E57C2,#4527A0);color:#fff;
+              font-size:12px;font-weight:800;letter-spacing:0.5px;cursor:pointer;">Next ▶</button>
+    </div>
   </div>
 
   <!-- User profile row — shown when signed in, hidden for guests -->
