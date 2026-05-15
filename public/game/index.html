@@ -3783,6 +3783,83 @@ function startGameWithConfig(numHumans, numAIs) {
   initGame();
 }
 
+// ================================================================
+//  Interactive TUTORIAL
+// ================================================================
+const TUTORIAL_STEPS = [
+  {
+    title: '👋 Welcome, Commander!',
+    body: 'You command the <b>red starships</b> at the bottom. The alien controls the green ships at the top. Press <b>Next</b> to begin.'
+  },
+  {
+    title: '🚀 Step 1 — Select a ship',
+    body: '<b>Tap one of your red starships</b> on the board. Yellow squares will appear showing where it can move.'
+  },
+  {
+    title: '➡️ Step 2 — Move it',
+    body: 'Tap a <b>yellow square</b> to move your ship there. If you land on a <b>planet 🪐</b>, you capture it!'
+  },
+  {
+    title: '✔ Step 3 — Done Moving',
+    body: 'After moving, press <b>✔ Done Moving</b> at the bottom to finish your move phase. (You can also move your second ship first.)'
+  },
+  {
+    title: '🔫 Step 4 — Fire a Laser',
+    body: 'Press <b>🔫 Fire Laser</b>, choose a ship, then pick a direction. Lasers <b>push enemy ships back</b> and can capture planets!'
+  },
+  {
+    title: '⚡ Step 5 — Electric Wall',
+    body: 'Press <b>⚡ Electric Wall</b> to place a barrier that blocks enemy ships and lasers. Use them to defend your planets!'
+  },
+  {
+    title: '✅ Step 6 — End Turn',
+    body: 'When you\'re done with everything, press <b>✅ End Turn</b>. The alien will then take their turn.'
+  },
+  {
+    title: '🏆 How to Win',
+    body: 'To win you must do <b>BOTH</b>:<br>• Reach the <b>top row</b> (alien\'s home) with one of your ships<br>• Control <b>more planets</b> than the alien at that moment.<br><br>Capture planets, push enemies away, and break through!'
+  },
+  {
+    title: '🎯 You\'re ready!',
+    body: 'That\'s it, Commander. Keep playing this match to practice, or return to the menu anytime. <b>Good luck!</b>'
+  }
+];
+let tutorialActive = false;
+let tutorialStepIdx = 0;
+
+function startTutorial() {
+  tutorialActive = true;
+  tutorialStepIdx = 0;
+  hideMenu();
+  stopMenuMusic();
+  gameConfig = { numHumans: 1, numAIs: 1 };
+  initGame();
+  document.getElementById('tut-step-total').textContent = TUTORIAL_STEPS.length;
+  document.getElementById('tutorial-panel').style.display = 'block';
+  renderTutorialStep();
+}
+function renderTutorialStep() {
+  const s = TUTORIAL_STEPS[tutorialStepIdx];
+  document.getElementById('tut-step-num').textContent = tutorialStepIdx + 1;
+  document.getElementById('tut-title').innerHTML = s.title;
+  document.getElementById('tut-body').innerHTML = s.body;
+  document.getElementById('tut-prev').style.visibility = tutorialStepIdx === 0 ? 'hidden' : 'visible';
+  document.getElementById('tut-next').textContent =
+    tutorialStepIdx === TUTORIAL_STEPS.length - 1 ? 'Finish ✓' : 'Next ▶';
+}
+function tutorialNext() {
+  if (tutorialStepIdx >= TUTORIAL_STEPS.length - 1) { endTutorial(); return; }
+  tutorialStepIdx++;
+  renderTutorialStep();
+}
+function tutorialPrev() {
+  if (tutorialStepIdx > 0) { tutorialStepIdx--; renderTutorialStep(); }
+}
+function endTutorial() {
+  tutorialActive = false;
+  document.getElementById('tutorial-panel').style.display = 'none';
+}
+
 function openStats() {
   document.getElementById('stats-overlay').classList.add('show');
   if (typeof window.__loadStats === 'function') window.__loadStats();
