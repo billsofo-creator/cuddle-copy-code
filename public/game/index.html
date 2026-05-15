@@ -1123,22 +1123,10 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
 </div>
 
 <div id="cw">
-  <div class="legend">
-    <div class="legend-title">LEGEND</div>
-    <span class="leg"><span class="dot" style="background:linear-gradient(180deg,#EF5350,#B71C1C)"></span>Your ship</span>
-    <span class="leg"><span class="dot" style="background:linear-gradient(180deg,#66BB6A,#2E7D32)"></span>Alien ship</span>
-    <span class="leg"><span class="dot" style="background:radial-gradient(circle at 30% 30%,#fff,#90A4AE)"></span>Free planet</span>
-    <span class="leg"><span class="dot" style="background:radial-gradient(circle at 30% 30%,#FFAB91,#8B0000)"></span>Your planet</span>
-    <span class="leg"><span class="dot" style="background:radial-gradient(circle at 30% 30%,#A5D6A7,#1B5E20)"></span>Alien planet</span>
-    <span class="leg"><span class="sq" style="background:rgba(255,214,0,.55)"></span>Valid move</span>
-    <span class="leg"><span class="sq" style="background:rgba(255,120,0,.55)"></span>Laser path</span>
-    <span class="leg"><span class="bar-line"></span>Electric Wall</span>
-    <button id="btn-restart" onclick="onIngameMenu()">☰ Menu</button>
-  </div>
   <canvas id="canvas"></canvas>
 </div>
 
-<div id="status-card">
+<div id="status-card" style="display:none;">
   <div id="turn-timer" style="display:none;">
     <svg id="timer-ring" viewBox="0 0 36 36">
       <circle class="timer-bg" cx="18" cy="18" r="15.9"/>
@@ -1151,6 +1139,7 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
 </div>
 
 <div id="controls">
+  <button id="btn-restart" onclick="onIngameMenu()">☰ Menu</button>
   <button id="btn-donmov"  onclick="onDoneMoving()">✔ Done Moving</button>
   <button id="btn-shoot"   onclick="onShoot()">🔫 Fire Laser</button>
   <button id="btn-barrier" onclick="onBarrier()">⚡ Electric Wall (0)</button>
