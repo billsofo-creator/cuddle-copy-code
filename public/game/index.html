@@ -1532,9 +1532,8 @@ function computeLayout() {
   // Width is 10 cells (COLS), height is 16 cells (ROWS).
   // Reserve room for the compact UI around the board (header, info bar,
   // status, buttons, legend). With the tightened CSS this now takes ~290-340px.
-  const reservedV = window.innerHeight < 700 ? 230 : 260;
-  // Reserve room for the vertical legend sidebar on the left of the board (~37px incl. gap)
-  const legendW  = 37;
+  const reservedV = window.innerHeight < 700 ? 150 : 170;
+  const legendW  = 0;
   const maxW = Math.min(window.innerWidth - 4, 760) - legendW;
   const maxH = Math.max(420, window.innerHeight - reservedV);
 
