@@ -1113,30 +1113,30 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
 <div class="header">
   <span class="swords">🚀</span>
   <h1>STELLAR TACTICS</h1>
-  <span class="swords">🛸</span>
-</div>
-<div class="sub">Command the Stars · Turn-Based Star Warfare</div>
+   <span class="swords">🛸</span>
+ </div>
+ <div class="sub">Command the Stars · Turn-Based Star Warfare</div>
 
-<div id="info-bar">
-  <div id="player-cards-row"></div>
-  <span id="turn-label">⚔<br>TURN</span>
-</div>
+ <div id="info-bar">
+   <div id="player-cards-row"></div>
+   <span id="turn-label">⚔<br>TURN</span>
+   <div id="turn-timer" style="display:none; margin-left:6px;">
+     <svg id="timer-ring" viewBox="0 0 36 36">
+       <circle class="timer-bg" cx="18" cy="18" r="15.9"/>
+       <circle id="timer-arc" class="timer-fg" cx="18" cy="18" r="15.9"/>
+     </svg>
+     <span id="timer-num">20</span>
+   </div>
+ </div>
 
-<div id="cw">
-  <canvas id="canvas"></canvas>
-</div>
+ <div id="cw">
+   <canvas id="canvas"></canvas>
+ </div>
 
-<div id="status-card" style="display:none;">
-  <div id="turn-timer" style="display:none;">
-    <svg id="timer-ring" viewBox="0 0 36 36">
-      <circle class="timer-bg" cx="18" cy="18" r="15.9"/>
-      <circle id="timer-arc" class="timer-fg" cx="18" cy="18" r="15.9"/>
-    </svg>
-    <span id="timer-num">20</span>
-  </div>
-  <div id="phase-lbl">SELECT A SHIP TO MOVE</div>
-  <div id="status">Tap one of your red starships to move it, or jump straight to Fire / End Turn.</div>
-</div>
+ <div id="status-card" style="display:none !important;">
+   <div id="phase-lbl"></div>
+   <div id="status"></div>
+ </div>
 
 <div id="controls">
   <button id="btn-restart" onclick="onIngameMenu()">☰ Menu</button>
@@ -3707,7 +3707,7 @@ function updateUI() {
 
   const isRemote = phase === 'remote_turn';
   document.getElementById('controls').style.display    = isRemote ? 'none' : '';
-  document.getElementById('status-card').style.display = '';
+  // status-card permanently hidden (info shown elsewhere)
 
   // Per-player island & barrier counts
   allPlayers.forEach((p, i) => {
@@ -3976,7 +3976,8 @@ function vibrateDevice() {
 function notifyMyTurnStart() {
   playTurnSound();
   vibrateDevice();
-  startTurnTimer();
+  // Timer only runs in online multiplayer
+  if (onlineMode) startTurnTimer();
 }
 
 // ── Remote watchdog: HOST fires if a remote player stalls/disconnects ──
