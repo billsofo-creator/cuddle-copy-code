@@ -1537,7 +1537,7 @@ function computeLayout() {
   const reservedV = window.innerHeight < 700 ? 200 : 215;
   const legendW  = 0;
   const maxW = Math.min(window.innerWidth - 2, 1100) - legendW;
-  const maxH = Math.max(440, window.innerHeight - reservedV);
+  const maxH = Math.max(300, window.innerHeight - reservedV);
 
   // Tight estimate: try a label area ~ 22px first, then refine
   const tmpL = 22;
