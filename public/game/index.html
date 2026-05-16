@@ -3707,7 +3707,7 @@ function updateUI() {
 
   const isRemote = phase === 'remote_turn';
   document.getElementById('controls').style.display    = isRemote ? 'none' : '';
-  document.getElementById('status-card').style.display = '';
+  // status-card permanently hidden (info shown elsewhere)
 
   // Per-player island & barrier counts
   allPlayers.forEach((p, i) => {
