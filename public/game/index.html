@@ -1532,17 +1532,17 @@ function computeLayout() {
   // Width is 10 cells (COLS), height is 16 cells (ROWS).
   // Reserve room for the compact UI around the board (header, info bar,
   // status, buttons, legend). With the tightened CSS this now takes ~290-340px.
-  const reservedV = window.innerHeight < 700 ? 150 : 170;
+  const reservedV = window.innerHeight < 700 ? 95 : 115;
   const legendW  = 0;
-  const maxW = Math.min(window.innerWidth - 4, 760) - legendW;
-  const maxH = Math.max(420, window.innerHeight - reservedV);
+  const maxW = Math.min(window.innerWidth - 2, 1100) - legendW;
+  const maxH = Math.max(440, window.innerHeight - reservedV);
 
   // Tight estimate: try a label area ~ 22px first, then refine
   const tmpL = 22;
   CELL = Math.max(24, Math.min(
     Math.floor((maxW - tmpL) / COLS),   // 10 cells across
-    Math.floor((maxH - tmpL) / ROWS),   // 14 cells tall
-    96                                  // cap so it doesn't overflow on big screens
+    Math.floor((maxH - tmpL) / ROWS),   // 16 cells tall
+    140                                 // cap so it doesn't overflow on big screens
   ));
 
   // Scale label area with cell size (compact to leave more room for cells)
