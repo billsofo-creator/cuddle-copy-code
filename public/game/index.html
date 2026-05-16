@@ -3976,7 +3976,8 @@ function vibrateDevice() {
 function notifyMyTurnStart() {
   playTurnSound();
   vibrateDevice();
-  startTurnTimer();
+  // Timer only runs in online multiplayer
+  if (onlineMode) startTurnTimer();
 }
 
 // ── Remote watchdog: HOST fires if a remote player stalls/disconnects ──
