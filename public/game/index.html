@@ -3028,25 +3028,14 @@ function drawPlayerHomePlanet(owner) {
     ? yTop - 0.7 * CELL                                       // centre ABOVE the board
     : yBot + 0.7 * CELL;                                      // centre BELOW the board
 
-  // Colour palette — human=red (bottom), ai=green (top)
+  // Black home worlds with gold rim (both players)
   let baseColor, lightColor, darkColor, atmosColor, rimColor, contColor;
-  if (owner === 'human') {
-    // Red magma/lava world (matches red human ships)
-    baseColor  = '#C62828';
-    lightColor = '#FFCCBC';
-    darkColor  = '#330000';
-    atmosColor = 'rgba(255,120,120,0.65)';
-    rimColor   = 'rgba(255,200,200,0.85)';
-    contColor  = 'rgba(70,10,10,0.55)';
-  } else {
-    // Green Earth-like world (matches green AI ships)
-    baseColor  = '#2E7D32';
-    lightColor = '#C8E6C9';
-    darkColor  = '#062012';
-    atmosColor = 'rgba(140,255,170,0.65)';
-    rimColor   = 'rgba(180,255,200,0.85)';
-    contColor  = 'rgba(15,55,28,0.45)';
-  }
+  baseColor  = '#0A0A0A';
+  lightColor = '#2A2A2A';
+  darkColor  = '#000000';
+  atmosColor = 'rgba(255,215,0,0.35)';
+  rimColor   = 'rgba(255,215,0,1)';
+  contColor  = 'rgba(40,30,0,0.45)';
 
   ctx.save();
   // Clip to the home row across the FULL board width so the planet's
