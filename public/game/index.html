@@ -3780,39 +3780,31 @@ function startGameWithConfig(numHumans, numAIs) {
 const TUTORIAL_STEPS = [
   {
     title: '👋 Welcome, Commander!',
-    body: 'You command the <b>red starships</b> at the bottom. The alien controls the green ships at the top. Press <b>Next</b> to begin.'
+    body: 'You command the <b>red starships</b> at the bottom. The alien controls the green ships at the top. I\'ll guide you through your first turn — press <b>Next ▶</b> to begin.',
+    hint: ''
   },
   {
-    title: '🚀 Step 1 — Select a ship',
-    body: '<b>Tap one of your red starships</b> on the board. Yellow squares will appear showing where it can move.'
+    title: '🚀 Move a ship',
+    body: 'At the start of every turn you can move <b>each ship one position</b>.<br>👉 <b>Tap one of your red ships</b>, then tap a <b>yellow square</b> to move it.',
+    waitFor: 'moved',
+    hint: '⏳ Waiting: move one of your ships…'
   },
   {
-    title: '➡️ Step 2 — Move it',
-    body: 'Tap a <b>yellow square</b> to move your ship there. If you land on a <b>planet 🪐</b>, you capture it!'
+    title: '🔫 Fire a laser',
+    body: 'Now try shooting!<br>👉 Press <b>🔫 Fire Laser</b>, choose a ship, then an <b>orange cell</b> to fire.<br>Lasers <b>push enemies back</b> and if they hit a <b>planet 🪐 it becomes yours</b>!',
+    waitFor: 'shot',
+    hint: '⏳ Waiting: fire a laser…'
   },
   {
-    title: '✔ Step 3 — Done Moving',
-    body: 'After moving, press <b>✔ Done Moving</b> at the bottom to finish your move phase. (You can also move your second ship first.)'
+    title: '✅ End your turn',
+    body: 'When you\'re done, press <b>✅ End Turn</b>. The alien will then take its turn.',
+    waitFor: 'turn',
+    hint: '⏳ Waiting: press End Turn…'
   },
   {
-    title: '🔫 Step 4 — Fire a Laser',
-    body: 'Press <b>🔫 Fire Laser</b>, choose a ship, then pick a direction. Lasers <b>push enemy ships back</b> and can capture planets!'
-  },
-  {
-    title: '⚡ Step 5 — Electric Wall',
-    body: 'Press <b>⚡ Electric Wall</b> to place a barrier that blocks enemy ships and lasers. Use them to defend your planets!'
-  },
-  {
-    title: '✅ Step 6 — End Turn',
-    body: 'When you\'re done with everything, press <b>✅ End Turn</b>. The alien will then take their turn.'
-  },
-  {
-    title: '🏆 How to Win',
-    body: 'To win you must do <b>BOTH</b>:<br>• Reach the <b>top row</b> (alien\'s home) with one of your ships<br>• Control <b>more planets</b> than the alien at that moment.<br><br>Capture planets, push enemies away, and break through!'
-  },
-  {
-    title: '🎯 You\'re ready!',
-    body: 'That\'s it, Commander. Keep playing this match to practice, or return to the menu anytime. <b>Good luck!</b>'
+    title: '🏆 Your goal',
+    body: 'Your mission: <b>reach the top row</b> (the alien\'s home) with one of your ships, while owning <b>more planets</b> than the alien.<br><br>Capture planets, push enemies away, and break through. <b>Good luck, Commander!</b>',
+    hint: ''
   }
 ];
 let tutorialActive = false;
@@ -3835,10 +3827,25 @@ function renderTutorialStep() {
   document.getElementById('tut-title').innerHTML = s.title;
   document.getElementById('tut-body').innerHTML = s.body;
   document.getElementById('tut-prev').style.visibility = tutorialStepIdx === 0 ? 'hidden' : 'visible';
-  document.getElementById('tut-next').textContent =
-    tutorialStepIdx === TUTORIAL_STEPS.length - 1 ? 'Finish ✓' : 'Next ▶';
+  const nextBtn = document.getElementById('tut-next');
+  const hintEl  = document.getElementById('tut-hint');
+  const isLast  = tutorialStepIdx === TUTORIAL_STEPS.length - 1;
+  nextBtn.textContent = isLast ? 'Finish ✓' : 'Next Tutorial ▶';
+  if (s.waitFor) {
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.45';
+    nextBtn.style.cursor = 'not-allowed';
+    hintEl.textContent = s.hint || '';
+  } else {
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.style.cursor = 'pointer';
+    hintEl.textContent = '';
+  }
 }
 function tutorialNext() {
+  const s = TUTORIAL_STEPS[tutorialStepIdx];
+  if (s.waitFor) return; // gated — must perform action first
   if (tutorialStepIdx >= TUTORIAL_STEPS.length - 1) { endTutorial(); return; }
   tutorialStepIdx++;
   renderTutorialStep();
@@ -3849,6 +3856,21 @@ function tutorialPrev() {
 function endTutorial() {
   tutorialActive = false;
   document.getElementById('tutorial-panel').style.display = 'none';
+}
+// Called from game actions to unlock gated tutorial steps.
+function tutorialNotify(event) {
+  if (!tutorialActive) return;
+  const s = TUTORIAL_STEPS[tutorialStepIdx];
+  if (!s || s.waitFor !== event) return;
+  // Unlock the Next button and update hint
+  const nextBtn = document.getElementById('tut-next');
+  const hintEl  = document.getElementById('tut-hint');
+  if (nextBtn) {
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.style.cursor = 'pointer';
+  }
+  if (hintEl) hintEl.textContent = '✅ Done! Press Next Tutorial ▶';
 }
 
 function openStats() {
