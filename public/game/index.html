@@ -354,6 +354,9 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
   animation: menuFade 0.5s ease-out;
 }
 #main-menu.show { display: flex; }
+#menu-tutorial-chip { display: none; }
+#main-menu.show ~ #menu-tutorial-chip,
+body:has(#main-menu.show) #menu-tutorial-chip { display: inline-flex !important; }
 @keyframes menuFade { from { opacity: 0; } to { opacity: 1; } }
 
 /* Animated twinkling stars layer */
@@ -1001,38 +1004,44 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
       <span class="arrow">▶</span>
     </button>
 
-    <button class="menu-btn" onclick="startTutorial()">
-      <span class="ico">🎓</span>
-      <span class="lbl">
-        <span class="l1">Tutorial</span>
-        <span class="l2">Step-by-step — learn by playing</span>
-      </span>
-      <span class="arrow">▶</span>
-    </button>
   </div>
 
-  <!-- Interactive tutorial floating panel -->
-  <div id="tutorial-panel" style="display:none;position:fixed;left:12px;bottom:12px;z-index:250;
-       width:300px;max-width:calc(100vw - 24px);background:linear-gradient(160deg,#1a1340 0%,#0d0a26 100%);
-       border:2px solid rgba(140,100,255,0.6);border-radius:14px;padding:14px 16px;
-       box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 24px rgba(140,100,255,.35);color:#E8EEF7;
+  <!-- Small corner tutorial chip on main menu -->
+  <button id="menu-tutorial-chip" onclick="startTutorial()"
+          style="position:fixed;right:12px;bottom:12px;z-index:1500;
+                 display:inline-flex;align-items:center;gap:6px;
+                 padding:7px 11px;border-radius:999px;
+                 background:linear-gradient(180deg,#7E57C2,#4527A0);
+                 color:#fff;border:1px solid rgba(255,255,255,0.18);
+                 font-size:11px;font-weight:800;letter-spacing:0.5px;
+                 cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.4);">
+    🎓 Tutorial
+  </button>
+
+  <!-- Interactive tutorial floating panel (top, compact) -->
+  <div id="tutorial-panel" style="display:none;position:fixed;left:50%;top:8px;transform:translateX(-50%);
+       z-index:250;width:min(360px, calc(100vw - 16px));
+       background:linear-gradient(160deg,#1a1340 0%,#0d0a26 100%);
+       border:2px solid rgba(140,100,255,0.6);border-radius:12px;padding:10px 12px;
+       box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 20px rgba(140,100,255,.35);color:#E8EEF7;
        font-family:inherit;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#B39DDB;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;color:#B39DDB;">
         🎓 TUTORIAL · <span id="tut-step-num">1</span>/<span id="tut-step-total">1</span>
       </div>
       <button onclick="endTutorial()" style="background:transparent;border:none;color:#7986CB;
-              font-size:16px;cursor:pointer;padding:0 4px;line-height:1;">✖</button>
+              font-size:14px;cursor:pointer;padding:0 4px;line-height:1;">✖</button>
     </div>
-    <div id="tut-title" style="font-size:15px;font-weight:800;margin-bottom:6px;color:#FFD54F;"></div>
-    <div id="tut-body" style="font-size:13px;line-height:1.45;color:#E8EEF7;margin-bottom:12px;"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button id="tut-prev" onclick="tutorialPrev()" style="padding:7px 12px;border-radius:8px;
+    <div id="tut-title" style="font-size:13px;font-weight:800;margin-bottom:3px;color:#FFD54F;"></div>
+    <div id="tut-body" style="font-size:12px;line-height:1.4;color:#E8EEF7;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center;">
+      <span id="tut-hint" style="flex:1;font-size:10px;color:#FFB74D;font-style:italic;"></span>
+      <button id="tut-prev" onclick="tutorialPrev()" style="padding:5px 10px;border-radius:8px;
               border:1px solid rgba(140,100,255,0.4);background:transparent;color:#B39DDB;
-              font-size:12px;font-weight:700;cursor:pointer;">◀ Back</button>
-      <button id="tut-next" onclick="tutorialNext()" style="padding:7px 14px;border-radius:8px;border:none;
+              font-size:11px;font-weight:700;cursor:pointer;">◀</button>
+      <button id="tut-next" onclick="tutorialNext()" style="padding:5px 12px;border-radius:8px;border:none;
               background:linear-gradient(180deg,#7E57C2,#4527A0);color:#fff;
-              font-size:12px;font-weight:800;letter-spacing:0.5px;cursor:pointer;">Next ▶</button>
+              font-size:11px;font-weight:800;letter-spacing:0.4px;cursor:pointer;">Next ▶</button>
     </div>
   </div>
 
@@ -2086,6 +2095,7 @@ function onCancel() {
 
 function onEndTurn() {
   if (phase !== 'action') return;
+  if (typeof tutorialNotify==='function') tutorialNotify('turn');
   finishCurrentTurn();
 }
 
@@ -2705,6 +2715,7 @@ function handleClick(e) {
     const vm = validMoveCells.find(m => m.row===row && m.col===col);
     if (vm && moveStepsLeft > 0) {
       doMoveShip(getMover(), row, col);
+      if (typeof tutorialNotify==='function') tutorialNotify('moved');
       if (phase==='gameover') return;
       moveStepsLeft--;
       if (moveStepsLeft > 0) {
@@ -2765,6 +2776,7 @@ function handleClick(e) {
       if (ray.cells.find(cl => cl.row===row && cl.col===col)) {
         const shooterId = shootingShipId;
         applyShot(getShooter(), ray);
+        if (typeof tutorialNotify==='function') tutorialNotify('shot');
         if (shooterId != null) shotShipIds.add(shooterId);
         shootingShipId = null; validShotRays = [];
         if (phase !== 'gameover') {
@@ -3771,39 +3783,31 @@ function startGameWithConfig(numHumans, numAIs) {
 const TUTORIAL_STEPS = [
   {
     title: '👋 Welcome, Commander!',
-    body: 'You command the <b>red starships</b> at the bottom. The alien controls the green ships at the top. Press <b>Next</b> to begin.'
+    body: 'You command the <b>red starships</b> at the bottom. The alien controls the green ships at the top. I\'ll guide you through your first turn — press <b>Next ▶</b> to begin.',
+    hint: ''
   },
   {
-    title: '🚀 Step 1 — Select a ship',
-    body: '<b>Tap one of your red starships</b> on the board. Yellow squares will appear showing where it can move.'
+    title: '🚀 Move a ship',
+    body: 'At the start of every turn you can move <b>each ship one position</b>.<br>👉 <b>Tap one of your red ships</b>, then tap a <b>yellow square</b> to move it.',
+    waitFor: 'moved',
+    hint: '⏳ Waiting: move one of your ships…'
   },
   {
-    title: '➡️ Step 2 — Move it',
-    body: 'Tap a <b>yellow square</b> to move your ship there. If you land on a <b>planet 🪐</b>, you capture it!'
+    title: '🔫 Fire a laser',
+    body: 'Now try shooting!<br>👉 Press <b>🔫 Fire Laser</b>, choose a ship, then an <b>orange cell</b> to fire.<br>Lasers <b>push enemies back</b> and if they hit a <b>planet 🪐 it becomes yours</b>!',
+    waitFor: 'shot',
+    hint: '⏳ Waiting: fire a laser…'
   },
   {
-    title: '✔ Step 3 — Done Moving',
-    body: 'After moving, press <b>✔ Done Moving</b> at the bottom to finish your move phase. (You can also move your second ship first.)'
+    title: '✅ End your turn',
+    body: 'When you\'re done, press <b>✅ End Turn</b>. The alien will then take its turn.',
+    waitFor: 'turn',
+    hint: '⏳ Waiting: press End Turn…'
   },
   {
-    title: '🔫 Step 4 — Fire a Laser',
-    body: 'Press <b>🔫 Fire Laser</b>, choose a ship, then pick a direction. Lasers <b>push enemy ships back</b> and can capture planets!'
-  },
-  {
-    title: '⚡ Step 5 — Electric Wall',
-    body: 'Press <b>⚡ Electric Wall</b> to place a barrier that blocks enemy ships and lasers. Use them to defend your planets!'
-  },
-  {
-    title: '✅ Step 6 — End Turn',
-    body: 'When you\'re done with everything, press <b>✅ End Turn</b>. The alien will then take their turn.'
-  },
-  {
-    title: '🏆 How to Win',
-    body: 'To win you must do <b>BOTH</b>:<br>• Reach the <b>top row</b> (alien\'s home) with one of your ships<br>• Control <b>more planets</b> than the alien at that moment.<br><br>Capture planets, push enemies away, and break through!'
-  },
-  {
-    title: '🎯 You\'re ready!',
-    body: 'That\'s it, Commander. Keep playing this match to practice, or return to the menu anytime. <b>Good luck!</b>'
+    title: '🏆 Your goal',
+    body: 'Your mission: <b>reach the top row</b> (the alien\'s home) with one of your ships, while owning <b>more planets</b> than the alien.<br><br>Capture planets, push enemies away, and break through. <b>Good luck, Commander!</b>',
+    hint: ''
   }
 ];
 let tutorialActive = false;
@@ -3826,10 +3830,25 @@ function renderTutorialStep() {
   document.getElementById('tut-title').innerHTML = s.title;
   document.getElementById('tut-body').innerHTML = s.body;
   document.getElementById('tut-prev').style.visibility = tutorialStepIdx === 0 ? 'hidden' : 'visible';
-  document.getElementById('tut-next').textContent =
-    tutorialStepIdx === TUTORIAL_STEPS.length - 1 ? 'Finish ✓' : 'Next ▶';
+  const nextBtn = document.getElementById('tut-next');
+  const hintEl  = document.getElementById('tut-hint');
+  const isLast  = tutorialStepIdx === TUTORIAL_STEPS.length - 1;
+  nextBtn.textContent = isLast ? 'Finish ✓' : 'Next Tutorial ▶';
+  if (s.waitFor) {
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.45';
+    nextBtn.style.cursor = 'not-allowed';
+    hintEl.textContent = s.hint || '';
+  } else {
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.style.cursor = 'pointer';
+    hintEl.textContent = '';
+  }
 }
 function tutorialNext() {
+  const s = TUTORIAL_STEPS[tutorialStepIdx];
+  if (s.waitFor) return; // gated — must perform action first
   if (tutorialStepIdx >= TUTORIAL_STEPS.length - 1) { endTutorial(); return; }
   tutorialStepIdx++;
   renderTutorialStep();
@@ -3840,6 +3859,21 @@ function tutorialPrev() {
 function endTutorial() {
   tutorialActive = false;
   document.getElementById('tutorial-panel').style.display = 'none';
+}
+// Called from game actions to unlock gated tutorial steps.
+function tutorialNotify(event) {
+  if (!tutorialActive) return;
+  const s = TUTORIAL_STEPS[tutorialStepIdx];
+  if (!s || s.waitFor !== event) return;
+  // Unlock the Next button and update hint
+  const nextBtn = document.getElementById('tut-next');
+  const hintEl  = document.getElementById('tut-hint');
+  if (nextBtn) {
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.style.cursor = 'pointer';
+  }
+  if (hintEl) hintEl.textContent = '✅ Done! Press Next Tutorial ▶';
 }
 
 function openStats() {
