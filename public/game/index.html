@@ -2095,6 +2095,7 @@ function onCancel() {
 
 function onEndTurn() {
   if (phase !== 'action') return;
+  if (typeof tutorialNotify==='function') tutorialNotify('turn');
   finishCurrentTurn();
 }
 
