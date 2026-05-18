@@ -2775,6 +2775,7 @@ function handleClick(e) {
       if (ray.cells.find(cl => cl.row===row && cl.col===col)) {
         const shooterId = shootingShipId;
         applyShot(getShooter(), ray);
+        if (typeof tutorialNotify==='function') tutorialNotify('shot');
         if (shooterId != null) shotShipIds.add(shooterId);
         shootingShipId = null; validShotRays = [];
         if (phase !== 'gameover') {
