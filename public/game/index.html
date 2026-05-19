@@ -3816,13 +3816,19 @@ let tutorialStepIdx = 0;
 function startTutorial() {
   tutorialActive = true;
   tutorialStepIdx = 0;
-  hideMenu();
-  stopMenuMusic();
+  try { hideMenu(); } catch(e){}
+  try { stopMenuMusic(); } catch(e){}
   gameConfig = { numHumans: 1, numAIs: 1 };
-  initGame();
-  document.getElementById('tut-step-total').textContent = TUTORIAL_STEPS.length;
-  document.getElementById('tutorial-panel').style.display = 'block';
-  renderTutorialStep();
+  // Show panel FIRST so it's visible even if initGame throws or is slow.
+  const panel = document.getElementById('tutorial-panel');
+  if (panel) {
+    panel.style.setProperty('display', 'block', 'important');
+    document.getElementById('tut-step-total').textContent = TUTORIAL_STEPS.length;
+    renderTutorialStep();
+  }
+  try { initGame(); } catch(e){ console.error('initGame failed in tutorial:', e); }
+  // Re-assert after initGame in case any render path toggled it.
+  if (panel) panel.style.setProperty('display', 'block', 'important');
 }
 function renderTutorialStep() {
   const s = TUTORIAL_STEPS[tutorialStepIdx];
