@@ -1019,11 +1019,11 @@ body:has(#main-menu.show) #menu-tutorial-chip { display: inline-flex !important;
   </button>
 
   <!-- Interactive tutorial floating panel (top, compact) -->
-  <div id="tutorial-panel" style="display:none;position:fixed;left:50%;top:8px;transform:translateX(-50%);
-       z-index:250;width:min(360px, calc(100vw - 16px));
+  <div id="tutorial-panel" style="display:none;position:fixed;left:50%;top:max(8px, env(safe-area-inset-top));transform:translateX(-50%);
+       z-index:9999;width:min(360px, calc(100vw - 16px));pointer-events:auto;
        background:linear-gradient(160deg,#1a1340 0%,#0d0a26 100%);
-       border:2px solid rgba(140,100,255,0.6);border-radius:12px;padding:10px 12px;
-       box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 20px rgba(140,100,255,.35);color:#E8EEF7;
+       border:2px solid rgba(140,100,255,0.85);border-radius:12px;padding:10px 12px;
+       box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 24px rgba(140,100,255,.55);color:#E8EEF7;
        font-family:inherit;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;color:#B39DDB;">
