@@ -3840,21 +3840,12 @@ function renderTutorialStep() {
   const hintEl  = document.getElementById('tut-hint');
   const isLast  = tutorialStepIdx === TUTORIAL_STEPS.length - 1;
   nextBtn.textContent = isLast ? 'Finish ✓' : 'Next Tutorial ▶';
-  if (s.waitFor) {
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.45';
-    nextBtn.style.cursor = 'not-allowed';
-    hintEl.textContent = s.hint || '';
-  } else {
-    nextBtn.disabled = false;
-    nextBtn.style.opacity = '1';
-    nextBtn.style.cursor = 'pointer';
-    hintEl.textContent = '';
-  }
+  nextBtn.disabled = false;
+  nextBtn.style.opacity = '1';
+  nextBtn.style.cursor = 'pointer';
+  hintEl.textContent = s.hint || '';
 }
 function tutorialNext() {
-  const s = TUTORIAL_STEPS[tutorialStepIdx];
-  if (s.waitFor) return; // gated — must perform action first
   if (tutorialStepIdx >= TUTORIAL_STEPS.length - 1) { endTutorial(); return; }
   tutorialStepIdx++;
   renderTutorialStep();
