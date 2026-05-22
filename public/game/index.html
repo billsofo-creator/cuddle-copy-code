@@ -1297,6 +1297,34 @@ body:has(#main-menu.show) #menu-tutorial-chip { display: inline-flex !important;
     </div>
     <button class="cfg-cancel" onclick="hideConfigModal()">✖ Cancel</button>
   </div>
+  </div>
+</div>
+
+<!-- ═══ AD simulation modal ═══ -->
+<div id="ad-modal">
+  <div class="ad-box">
+    <div class="ad-tag">◆ SPONSORED ◆</div>
+    <div class="ad-title" id="ad-title">Galactic Quest Pro</div>
+    <div class="ad-visual" id="ad-visual">🚀</div>
+    <div class="ad-sub" id="ad-sub">Discover the most epic strategy game of 2026!</div>
+    <div id="ad-progress-bar"><div id="ad-progress-fill"></div></div>
+    <div style="font-size:11px;color:#9575CD;">Reward: <b style="color:#FFD54F;">🪙 +1 coin</b></div>
+    <button class="ad-close" id="ad-close-btn" disabled onclick="closeAdAndReward()">Claim 🪙</button>
+  </div>
+</div>
+
+<!-- ═══ No-coins modal ═══ -->
+<div id="nocoin-modal">
+  <div class="nc-box">
+    <div style="font-size:42px;margin-bottom:8px;">🪙</div>
+    <h3>Out of coins!</h3>
+    <p>You need <b>1 🪙</b> to play a game. Watch a short ad to earn one, or wait for the next refill.</p>
+    <div id="nocoin-timer" style="font-size:11px;color:#FFD54F;margin-bottom:14px;"></div>
+    <div class="nc-actions">
+      <button class="nc-ad" onclick="closeNoCoinModal(); watchAdForCoin();">▶ Watch Ad</button>
+      <button class="nc-cancel" onclick="closeNoCoinModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <div id="go">
