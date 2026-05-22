@@ -1166,6 +1166,32 @@ body:has(#main-menu.show) #menu-tutorial-chip { display: inline-flex !important;
   <div class="menu-footer">v1.0 · Made on Replit</div>
 </div>
 
+<!-- ═══ SHIPS SKIN PICKER MODAL ═══ -->
+<div id="ships-modal" style="display:none;position:fixed;inset:0;z-index:9998;
+     background:rgba(5,3,18,0.82);backdrop-filter:blur(6px);
+     align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div style="background:linear-gradient(160deg,#1a1340 0%,#0d0a26 100%);
+              border:1px solid rgba(140,100,255,0.4);border-radius:16px;
+              padding:18px;max-width:420px;width:100%;
+              box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:1.5px;color:#80CBC4;font-weight:800;">CUSTOMIZE</div>
+        <div style="font-size:18px;font-weight:900;color:#fff;">🚀 Your Ships</div>
+      </div>
+      <button onclick="closeShipsModal()"
+              style="background:transparent;border:1px solid rgba(255,255,255,0.2);
+                     color:#fff;width:32px;height:32px;border-radius:50%;
+                     cursor:pointer;font-size:16px;font-weight:700;">✕</button>
+    </div>
+    <div style="font-size:11px;color:#B39DDB;margin-bottom:12px;line-height:1.4;">
+      Pick a paint job for your fleet. Cosmetic only — gameplay is unchanged.
+    </div>
+    <div id="ships-skin-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
+  </div>
+</div>
+
+
 <!-- Interactive tutorial floating panel (kept outside #main-menu so it stays visible in-game) -->
 <div id="tutorial-panel" style="display:none;position:fixed;left:50%;top:max(8px, env(safe-area-inset-top));transform:translateX(-50%);
      z-index:9999;width:min(360px, calc(100vw - 16px));pointer-events:auto;
