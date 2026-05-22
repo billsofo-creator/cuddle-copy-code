@@ -4512,6 +4512,7 @@ function _olLoadSocketIO(cb) {
 }
 
 function enterOnlineLobby() {
+  if (!Coins.trySpend()) { showNoCoinModal(); return; }
   hideMenu();
   document.getElementById('online-lobby').classList.add('show');
   document.getElementById('ol-code-box').style.display    = 'none';
