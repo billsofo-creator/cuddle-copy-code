@@ -3886,6 +3886,7 @@ function showMenu() {
       if (!_menuMusicOn) startMenuMusic();
     }, { once: true });
   }
+  try { Coins.renderUI(); } catch(e){}
 }
 function hideMenu() {
   document.getElementById('main-menu').classList.remove('show');
