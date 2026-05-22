@@ -3911,6 +3911,11 @@ function hideConfigModal() {
   showMenu();
 }
 function startGameWithConfig(numHumans, numAIs) {
+  if (!Coins.trySpend()) {
+    document.getElementById('config-modal').classList.remove('show');
+    showNoCoinModal();
+    return;
+  }
   document.getElementById('config-modal').classList.remove('show');
   stopMenuMusic();
   gameConfig = { numHumans, numAIs };
