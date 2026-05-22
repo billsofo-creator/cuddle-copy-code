@@ -1593,7 +1593,13 @@ function currentAiPlayer()    { return currentPlayer(); }
 
 function shipPlayerPalette(ship) {
   const pl = allPlayers.find(p => p.shipIds && p.shipIds.has(ship.id));
-  return pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
+  const basePal = pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
+  // Apply player-chosen skin only to the local human's ships (ids starting with 'h0')
+  if (window.ShipSkins && pl && !pl.isAi && ship.id && ship.id.startsWith('h0')) {
+    const skin = window.ShipSkins.getActive();
+    if (skin) return skin;
+  }
+  return basePal;
 }
 
 function setupGamePlayers(numHumans, numAIs) {
