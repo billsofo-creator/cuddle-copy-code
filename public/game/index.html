@@ -1168,7 +1168,20 @@ body:has(#main-menu.show) #menu-tutorial-chip { display: inline-flex !important;
       <div>
         <div style="font-size:10px;letter-spacing:1.5px;color:#80CBC4;font-weight:800;">CUSTOMIZE</div>
         <div style="font-size:18px;font-weight:900;color:#fff;">🚀 Your Ships</div>
-      </div>
+
+</div>
+
+<!-- Small corner ships skin chip (OUTSIDE #main-menu so position:fixed is viewport-relative) -->
+<button id="menu-ships-chip" onclick="openShipsModal()"
+        style="position:fixed;left:12px;bottom:12px;z-index:1500;
+               align-items:center;gap:6px;
+               padding:7px 11px;border-radius:999px;
+               background:linear-gradient(180deg,#26A69A,#00695C);
+               color:#fff;border:1px solid rgba(255,255,255,0.18);
+               font-size:11px;font-weight:800;letter-spacing:0.5px;
+               cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.4);">
+  🚀 Ships
+</button>
       <button onclick="closeShipsModal()"
               style="background:transparent;border:1px solid rgba(255,255,255,0.2);
                      color:#fff;width:32px;height:32px;border-radius:50%;
