@@ -5057,6 +5057,161 @@ async function _initDisabled() {
 }
 
 init();
+
+// ================================================================
+//  COINS / ENERGY SYSTEM (with ad rewards)
+// ================================================================
+const Coins = (() => {
+  const MAX = 4;
+  const REFILL_MS = 2 * 60 * 60 * 1000; // 2 hours
+  const K_COUNT = 'st_coins';
+  const K_NEXT  = 'st_coins_next_refill';
+
+  function now() { return Date.now(); }
+  function read() {
+    let c = parseInt(localStorage.getItem(K_COUNT), 10);
+    if (isNaN(c)) c = MAX;
+    c = Math.max(0, Math.min(MAX, c));
+    let next = parseInt(localStorage.getItem(K_NEXT), 10);
+    if (isNaN(next) || next < now() - REFILL_MS * 10) next = now() + REFILL_MS;
+    return { count: c, next };
+  }
+  function write(count, next) {
+    localStorage.setItem(K_COUNT, String(count));
+    localStorage.setItem(K_NEXT,  String(next));
+  }
+  // Apply accumulated refills based on elapsed time
+  function tick() {
+    let { count, next } = read();
+    if (count >= MAX) {
+      // keep timer reset if already full
+      next = now() + REFILL_MS;
+      write(count, next);
+      return { count, next };
+    }
+    while (count < MAX && now() >= next) {
+      count++;
+      next += REFILL_MS;
+    }
+    write(count, next);
+    return { count, next };
+  }
+  function get() { return tick().count; }
+  function trySpend() {
+    const s = tick();
+    if (s.count <= 0) return false;
+    let next = s.next;
+    // if was full, start the refill timer now that we dipped below max
+    if (s.count === MAX) next = now() + REFILL_MS;
+    write(s.count - 1, next);
+    renderUI();
+    return true;
+  }
+  function add(n = 1) {
+    const s = tick();
+    const newCount = Math.min(MAX, s.count + n);
+    let next = s.next;
+    if (newCount >= MAX) next = now() + REFILL_MS;
+    write(newCount, next);
+    renderUI();
+  }
+  function fmtRemaining(ms) {
+    if (ms <= 0) return '00:00';
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m`;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function renderUI() {
+    const { count, next } = tick();
+    const cEl = document.getElementById('coin-count');
+    if (cEl) cEl.textContent = count;
+    const pips = document.querySelectorAll('#coin-pips .coin-pip');
+    pips.forEach((p, i) => p.classList.toggle('filled', i < count));
+    const adBtn = document.getElementById('coin-watch-ad');
+    if (adBtn) adBtn.disabled = (count >= MAX);
+    const tEl = document.getElementById('coin-timer-val');
+    if (tEl) {
+      if (count >= MAX) tEl.textContent = 'FULL';
+      else tEl.textContent = fmtRemaining(next - now());
+    }
+    // also update no-coin modal timer if open
+    const ncT = document.getElementById('nocoin-timer');
+    if (ncT) ncT.textContent = count >= MAX ? '' : `Next free coin in ${fmtRemaining(next - now())}`;
+  }
+  // tick UI every second while menu is visible
+  setInterval(() => {
+    const menu = document.getElementById('main-menu');
+    const nc   = document.getElementById('nocoin-modal');
+    if ((menu && menu.classList.contains('show')) || (nc && nc.classList.contains('show'))) {
+      renderUI();
+    } else {
+      tick();
+    }
+  }, 1000);
+
+  return { get, trySpend, add, renderUI, MAX };
+})();
+
+// ── Ad simulation (replace inner with real ad SDK later) ──
+let _adTimer = null;
+const AD_DURATION_MS = 5000;
+const AD_VARIANTS = [
+  { title: 'Galactic Quest Pro',  visual: '🚀', sub: 'Discover the most epic strategy game of 2026!' },
+  { title: 'NovaCraft Builder',   visual: '🛸', sub: 'Build your dream space station — free to play.' },
+  { title: 'Stellar Snacks',      visual: '🍫', sub: 'Cosmic flavor in every bite. Out of this world.' },
+  { title: 'AstroFit Tracker',    visual: '⌚', sub: 'Train like an astronaut. Track every mission.' }
+];
+function watchAdForCoin() {
+  if (Coins.get() >= Coins.MAX) {
+    showToast && showToast('🪙 Coins already full!');
+    return;
+  }
+  const v = AD_VARIANTS[Math.floor(Math.random() * AD_VARIANTS.length)];
+  document.getElementById('ad-title').textContent  = v.title;
+  document.getElementById('ad-visual').textContent = v.visual;
+  document.getElementById('ad-sub').textContent    = v.sub;
+  const fill = document.getElementById('ad-progress-fill');
+  const btn  = document.getElementById('ad-close-btn');
+  fill.style.width = '0%';
+  btn.disabled = true;
+  btn.textContent = `Wait… 5s`;
+  document.getElementById('ad-modal').classList.add('show');
+  const start = Date.now();
+  if (_adTimer) clearInterval(_adTimer);
+  _adTimer = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const pct = Math.min(100, (elapsed / AD_DURATION_MS) * 100);
+    fill.style.width = pct + '%';
+    const left = Math.max(0, Math.ceil((AD_DURATION_MS - elapsed) / 1000));
+    if (elapsed >= AD_DURATION_MS) {
+      clearInterval(_adTimer); _adTimer = null;
+      btn.disabled = false;
+      btn.textContent = 'Claim 🪙 +1';
+    } else {
+      btn.textContent = `Wait… ${left}s`;
+    }
+  }, 100);
+}
+function closeAdAndReward() {
+  if (_adTimer) { clearInterval(_adTimer); _adTimer = null; }
+  document.getElementById('ad-modal').classList.remove('show');
+  Coins.add(1);
+  showToast && showToast('🪙 +1 coin earned!');
+}
+function showNoCoinModal() {
+  Coins.renderUI();
+  document.getElementById('nocoin-modal').classList.add('show');
+}
+function closeNoCoinModal() {
+  document.getElementById('nocoin-modal').classList.remove('show');
+  showMenu();
+}
+
+// initial UI paint
+try { Coins.renderUI(); } catch(e) {}
 </script>
 </body>
 </html>
