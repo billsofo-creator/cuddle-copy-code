@@ -5254,6 +5254,63 @@ function closeNoCoinModal() {
   showMenu();
 }
 
+// ═══════════════════════════════════════════════════════════
+// SHIP SKINS — cosmetic palette picker for the player's fleet
+// ═══════════════════════════════════════════════════════════
+window.ShipSkins = (() => {
+  const KEY = 'st_ship_skin';
+  // 10 cosmetic skins. Each is a full palette compatible with shipPlayerPalette().
+  const SKINS = [
+    { id:'classic',  name:'Classic Red',   emoji:'🚀', color:'#E53935', light:'#FFAB91', dark:'#5D0000', glow:'rgba(255,140,140,', rgb:'229,57,53',  accent:'#80FFA8', inner:'#E8FFD8', mid:'#7CFFB0' },
+    { id:'emerald',  name:'Emerald',       emoji:'🛸', color:'#2E7D32', light:'#A5D6A7', dark:'#0D3D11', glow:'rgba(120,255,150,', rgb:'46,125,50',  accent:'#FFB070', inner:'#FFE8D0', mid:'#FF9070' },
+    { id:'sunburst', name:'Sunburst',      emoji:'☀️', color:'#FF8800', light:'#FFD580', dark:'#5D3000', glow:'rgba(255,180,80,',  rgb:'255,136,0',  accent:'#80EAFF', inner:'#E0F8FF', mid:'#40D0F0' },
+    { id:'cyber',    name:'Cyber Cyan',    emoji:'💠', color:'#00ACC1', light:'#80DEEA', dark:'#003D4D', glow:'rgba(100,220,255,', rgb:'0,172,193',  accent:'#FFD54F', inner:'#FFF8E0', mid:'#FFCC00' },
+    { id:'violet',   name:'Royal Violet',  emoji:'👾', color:'#7E57C2', light:'#D1C4E9', dark:'#311B92', glow:'rgba(180,140,255,', rgb:'126,87,194', accent:'#FFD54F', inner:'#FFF1C8', mid:'#FFC107' },
+    { id:'rose',     name:'Neon Rose',     emoji:'🌹', color:'#EC407A', light:'#F8BBD0', dark:'#6A0034', glow:'rgba(255,150,200,', rgb:'236,64,122', accent:'#80FFEA', inner:'#E8FFF8', mid:'#40FFD0' },
+    { id:'gold',     name:'Solar Gold',    emoji:'⭐', color:'#FFB300', light:'#FFE082', dark:'#5D3F00', glow:'rgba(255,210,100,', rgb:'255,179,0',  accent:'#4FC3F7', inner:'#DDF4FF', mid:'#29B6F6' },
+    { id:'frost',    name:'Frost Blue',    emoji:'❄️', color:'#42A5F5', light:'#BBDEFB', dark:'#0D3B66', glow:'rgba(150,200,255,', rgb:'66,165,245', accent:'#FFCC80', inner:'#FFF1D8', mid:'#FFA726' },
+    { id:'lime',     name:'Toxic Lime',    emoji:'☢️', color:'#9CCC65', light:'#DCEDC8', dark:'#33691E', glow:'rgba(200,255,140,', rgb:'156,204,101',accent:'#CE93D8', inner:'#F5E8FA', mid:'#AB47BC' },
+    { id:'crimson',  name:'Stealth Black', emoji:'🦇', color:'#37474F', light:'#90A4AE', dark:'#0A1518', glow:'rgba(120,150,170,', rgb:'55,71,79',   accent:'#FF5252', inner:'#FFE0E0', mid:'#E53935' },
+  ];
+  function getId() { try { return localStorage.getItem(KEY) || 'classic'; } catch(e){ return 'classic'; } }
+  function setId(id) { try { localStorage.setItem(KEY, id); } catch(e){} }
+  function getActive() { return SKINS.find(s => s.id === getId()) || SKINS[0]; }
+  function list() { return SKINS; }
+  return { list, getActive, getId, setId };
+})();
+
+function openShipsModal() {
+  const grid = document.getElementById('ships-skin-grid');
+  const activeId = window.ShipSkins.getId();
+  grid.innerHTML = window.ShipSkins.list().map(s => `
+    <button onclick="selectShipSkin('${s.id}')" data-skin-id="${s.id}"
+      style="position:relative;padding:12px 10px;border-radius:12px;cursor:pointer;
+             background:linear-gradient(160deg, ${s.dark} 0%, #0a0820 100%);
+             border:2px solid ${s.id === activeId ? s.light : 'rgba(255,255,255,0.08)'};
+             box-shadow:${s.id === activeId ? '0 0 0 2px ' + s.color + ', 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
+             display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <div style="width:46px;height:46px;border-radius:50%;
+                  background:radial-gradient(circle at 35% 30%, ${s.light}, ${s.color} 55%, ${s.dark});
+                  display:flex;align-items:center;justify-content:center;font-size:22px;
+                  box-shadow:0 0 14px ${s.color}aa, inset 0 0 8px rgba(255,255,255,0.25);">
+        ${s.emoji}
+      </div>
+      <div style="font-size:11px;font-weight:800;color:#fff;text-align:center;">${s.name}</div>
+      ${s.id === activeId ? `<div style="position:absolute;top:6px;right:6px;background:${s.color};color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">ACTIVE</div>` : ''}
+    </button>
+  `).join('');
+  const modal = document.getElementById('ships-modal');
+  modal.style.display = 'flex';
+}
+function closeShipsModal() {
+  document.getElementById('ships-modal').style.display = 'none';
+}
+function selectShipSkin(id) {
+  window.ShipSkins.setId(id);
+  if (typeof showToast === 'function') showToast('🚀 Skin equipped!');
+  openShipsModal(); // re-render to show new active
+}
+
 // initial UI paint
 try { Coins.renderUI(); } catch(e) {}
 </script>
