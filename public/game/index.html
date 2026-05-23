@@ -3889,18 +3889,29 @@ function drawShip(ship) {
     return;
   }
 
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(angle);
-
   const L = rad * 1.05;     // half length (nose to tail)
   const W = rad * 0.62;     // half width
 
   // Shared per-ship animated pulse (engines, cockpit shimmer, lights)
-  // ship.id is a string like 'hs'/'hd' — turn it into a stable numeric phase offset
   const idPhase = (String(ship.id).charCodeAt(0) || 0) + (String(ship.id).charCodeAt(1) || 0);
   const pulse  = 0.80 + 0.20 * Math.sin(waveOffset * 0.18 + idPhase * 0.13);
   const pulse2 = 0.50 + 0.50 * Math.sin(waveOffset * 0.30 + idPhase * 0.09);
+
+  // Dispatch to alt-shape silhouette (cosmetic ship-skin choice).
+  const _shape = shipShape(ship);
+  if (_shape && _shape !== 'classic') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    drawAltShipShape(_shape, ctx, L, W, pal, pulse, pulse2, sel);
+    ctx.restore();
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+
 
   // Tinted accent colors
   const accentColor = pal.accent;
