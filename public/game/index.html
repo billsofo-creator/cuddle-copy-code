@@ -5317,7 +5317,7 @@ function openShipsModal() {
   _pendingSkinId = null;
   document.getElementById('ships-slot-picker').style.display = 'none';
   document.getElementById('ships-skin-grid').style.display = 'grid';
-  document.getElementById('ships-skin-help').textContent = 'Pick a paint job, then choose which ship to apply it to.';
+  document.getElementById('ships-skin-help').textContent = 'Pick a ship shape, then choose which ship to apply it to. (Your color stays the same.)';
   const grid = document.getElementById('ships-skin-grid');
   const activeS = window.ShipSkins.getIdFor('s');
   const activeD = window.ShipSkins.getIdFor('d');
@@ -5329,18 +5329,18 @@ function openShipsModal() {
     return `
     <button onclick="selectShipSkin('${s.id}')" data-skin-id="${s.id}"
       style="position:relative;padding:12px 10px;border-radius:12px;cursor:pointer;
-             background:linear-gradient(160deg, ${s.dark} 0%, #0a0820 100%);
-             border:2px solid ${inUse ? s.light : 'rgba(255,255,255,0.08)'};
-             box-shadow:${inUse ? '0 0 0 2px ' + s.color + ', 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
+             background:linear-gradient(160deg, #1a1438 0%, #0a0820 100%);
+             border:2px solid ${inUse ? '#7C4DFF' : 'rgba(255,255,255,0.08)'};
+             box-shadow:${inUse ? '0 0 0 2px #7C4DFF, 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
              display:flex;flex-direction:column;align-items:center;gap:6px;">
       <div style="width:46px;height:46px;border-radius:50%;
-                  background:radial-gradient(circle at 35% 30%, ${s.light}, ${s.color} 55%, ${s.dark});
-                  display:flex;align-items:center;justify-content:center;font-size:22px;
-                  box-shadow:0 0 14px ${s.color}aa, inset 0 0 8px rgba(255,255,255,0.25);">
+                  background:radial-gradient(circle at 35% 30%, #6b5fb5, #3b2f80 55%, #1a1248);
+                  display:flex;align-items:center;justify-content:center;font-size:24px;
+                  box-shadow:0 0 14px rgba(124,77,255,0.5), inset 0 0 8px rgba(255,255,255,0.18);">
         ${s.emoji}
       </div>
       <div style="font-size:11px;font-weight:800;color:#fff;text-align:center;">${s.name}</div>
-      ${badge ? `<div style="position:absolute;top:6px;right:6px;background:${s.color};color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">${badge}</div>` : ''}
+      ${badge ? `<div style="position:absolute;top:6px;right:6px;background:#7C4DFF;color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">${badge}</div>` : ''}
     </button>`;
   }).join('');
   document.getElementById('ships-modal').style.display = 'flex';
@@ -5353,7 +5353,7 @@ function selectShipSkin(id) {
   const skin = window.ShipSkins.list().find(x => x.id === id);
   document.getElementById('ships-skin-grid').style.display = 'none';
   document.getElementById('ships-skin-help').innerHTML =
-    `Apply <b style="color:${skin.color};">${skin.name}</b> to which ship?`;
+    `Apply <b style="color:#B39DDB;">${skin.name}</b> shape to which ship?`;
   const picker = document.getElementById('ships-slot-picker');
   picker.style.display = 'flex';
   picker.innerHTML = SHIP_SLOTS.map(slot => {
@@ -5361,25 +5361,26 @@ function selectShipSkin(id) {
     return `
       <button onclick="applySkinToSlot('${slot.key}')"
         style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer;
-               background:linear-gradient(160deg, ${cur.dark} 0%, #0a0820 100%);
+               background:linear-gradient(160deg, #1a1438 0%, #0a0820 100%);
                border:2px solid rgba(255,255,255,0.12);text-align:left;">
         <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;
-                    background:radial-gradient(circle at 35% 30%, ${cur.light}, ${cur.color} 55%, ${cur.dark});
-                    display:flex;align-items:center;justify-content:center;font-size:20px;
-                    box-shadow:0 0 12px ${cur.color}aa;">${slot.emoji}</div>
+                    background:radial-gradient(circle at 35% 30%, #6b5fb5, #3b2f80 55%, #1a1248);
+                    display:flex;align-items:center;justify-content:center;font-size:22px;
+                    box-shadow:0 0 12px rgba(124,77,255,0.5);">${slot.emoji}</div>
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:900;color:#fff;">${slot.label}</div>
           <div style="font-size:10px;color:#B39DDB;">Currently: ${cur.name}</div>
         </div>
-        <div style="font-size:18px;color:${skin.color};">→</div>
+        <div style="font-size:18px;color:#B39DDB;">→</div>
       </button>`;
   }).join('') + `
     <button onclick="openShipsModal()"
       style="padding:8px;border-radius:10px;cursor:pointer;background:transparent;
              border:1px solid rgba(255,255,255,0.15);color:#B39DDB;font-size:11px;font-weight:700;">
-      ← Back to skins
+      ← Back to shapes
     </button>`;
 }
+
 function applySkinToSlot(slotKey) {
   if (!_pendingSkinId) return;
   window.ShipSkins.setIdFor(slotKey, _pendingSkinId);
