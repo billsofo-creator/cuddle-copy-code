@@ -5316,6 +5316,9 @@ function selectShipSkin(id) {
   if (typeof showToast === 'function') showToast('🚀 Skin equipped!');
   openShipsModal(); // re-render to show new active
 }
+window.openShipsModal = openShipsModal;
+window.closeShipsModal = closeShipsModal;
+window.selectShipSkin = selectShipSkin;
 
 // initial UI paint
 try { Coins.renderUI(); } catch(e) {}
