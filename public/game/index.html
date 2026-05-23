@@ -1602,7 +1602,8 @@ function shipPlayerPalette(ship) {
   const basePal = pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
   // Apply player-chosen skin only to the local human's ships (ids starting with 'h0')
   if (window.ShipSkins && pl && !pl.isAi && ship.id && ship.id.startsWith('h0')) {
-    const skin = window.ShipSkins.getActive();
+    const slot = ship.id.endsWith('s') ? 's' : (ship.id.endsWith('d') ? 'd' : null);
+    const skin = slot ? window.ShipSkins.getActiveFor(slot) : null;
     if (skin) return skin;
   }
   return basePal;
