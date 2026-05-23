@@ -1600,15 +1600,21 @@ function currentAiPlayer()    { return currentPlayer(); }
 
 function shipPlayerPalette(ship) {
   const pl = allPlayers.find(p => p.shipIds && p.shipIds.has(ship.id));
-  const basePal = pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
-  // Apply player-chosen skin only to the local human's ships (ids starting with 'h0')
-  if (window.ShipSkins && pl && !pl.isAi && ship.id && ship.id.startsWith('h0')) {
-    const slot = ship.id.endsWith('s') ? 's' : (ship.id.endsWith('d') ? 'd' : null);
-    const skin = slot ? window.ShipSkins.getActiveFor(slot) : null;
-    if (skin) return skin;
-  }
-  return basePal;
+  // Player color stays the player's color — skins only change shape, not color.
+  return pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
 }
+
+// Returns the shape id ('classic' by default) for the local human's ships.
+function shipShape(ship) {
+  if (!window.ShipSkins || !ship || !ship.id || !ship.id.startsWith('h0')) return 'classic';
+  const pl = allPlayers.find(p => p.shipIds && p.shipIds.has(ship.id));
+  if (!pl || pl.isAi) return 'classic';
+  const slot = ship.id.endsWith('s') ? 's' : (ship.id.endsWith('d') ? 'd' : null);
+  if (!slot) return 'classic';
+  const skin = window.ShipSkins.getActiveFor(slot);
+  return (skin && skin.shape) || 'classic';
+}
+
 
 function setupGamePlayers(numHumans, numAIs) {
   currentPlayerIdx = 0;
@@ -3501,7 +3507,290 @@ function drawEffects() {
   }
 }
 
+// ── Alternative ship silhouettes (selected via the Ships modal).
+// Caller has already saved ctx, translated to ship center, and rotated to facing angle.
+// Each variant draws a distinct shape using the player's palette colors.
+function drawAltShipShape(shape, c, L, W, pal, pulse, pulse2, sel) {
+  const base = pal.color, light = pal.light, dark = pal.dark, glow = pal.glow;
+  const accent = pal.accent, inner = pal.inner, mid = pal.mid;
+  const stroke = sel ? '#FFFFFF' : 'rgba(0,0,0,0.7)';
+  const lw     = sel ? 2.2 : 1.2;
+
+  // Shared engine flame helper (along -x)
+  const flame = (dy, len) => {
+    const tg = c.createLinearGradient(-L*0.7, dy, -L*0.7 - len, dy);
+    tg.addColorStop(0,   `${glow}${(0.9*pulse).toFixed(2)})`);
+    tg.addColorStop(0.5, `${glow}${(0.4*pulse).toFixed(2)})`);
+    tg.addColorStop(1,   `${glow}0)`);
+    c.fillStyle = tg;
+    c.beginPath();
+    c.moveTo(-L*0.70, dy + W*0.18);
+    c.quadraticCurveTo(-L*0.7 - len*0.55, dy, -L*0.7 - len, dy);
+    c.quadraticCurveTo(-L*0.7 - len*0.55, dy, -L*0.70, dy - W*0.18);
+    c.closePath(); c.fill();
+  };
+  // Shared cockpit dot
+  const cockpit = (x, r) => {
+    c.shadowColor = 'rgba(120,200,255,0.7)'; c.shadowBlur = 6*pulse;
+    const g = c.createRadialGradient(x + r*0.2, -r*0.2, 0, x, 0, r);
+    g.addColorStop(0, 'rgba(240,250,255,0.98)');
+    g.addColorStop(0.5, 'rgba(110,200,255,0.92)');
+    g.addColorStop(1, 'rgba(20,40,120,0.95)');
+    c.fillStyle = g;
+    c.beginPath(); c.arc(x, 0, r, 0, Math.PI*2); c.fill();
+    c.shadowBlur = 0;
+  };
+
+  c.strokeStyle = stroke; c.lineWidth = lw;
+
+  if (shape === 'arrow') {
+    flame(0, L*1.5);
+    c.beginPath();
+    c.moveTo( L*1.10, 0); c.lineTo(-L*0.50,  W*0.55);
+    c.lineTo(-L*0.25, 0); c.lineTo(-L*0.50, -W*0.55);
+    c.closePath();
+    const g = c.createLinearGradient(L, 0, -L*0.5, 0);
+    g.addColorStop(0, light); g.addColorStop(0.5, base); g.addColorStop(1, dark);
+    c.fillStyle = g; c.fill(); c.stroke();
+    cockpit(L*0.30, W*0.20);
+    return;
+  }
+
+  if (shape === 'saucer') {
+    // soft aura
+    const ag = c.createRadialGradient(0,0,L*0.5,0,0,L*1.4);
+    ag.addColorStop(0, `${glow}${(0.25*pulse).toFixed(2)})`); ag.addColorStop(1, `${glow}0)`);
+    c.fillStyle = ag; c.beginPath(); c.arc(0,0,L*1.4,0,Math.PI*2); c.fill();
+    // disc
+    c.beginPath(); c.ellipse(0, W*0.10, L*0.95, W*0.55, 0, 0, Math.PI*2);
+    const dg = c.createLinearGradient(0, -W*0.4, 0, W*0.7);
+    dg.addColorStop(0, light); dg.addColorStop(0.5, base); dg.addColorStop(1, dark);
+    c.fillStyle = dg; c.fill(); c.stroke();
+    // dome
+    c.beginPath(); c.ellipse(0, -W*0.05, L*0.40, W*0.45, 0, Math.PI, 0);
+    const dome = c.createRadialGradient(-L*0.05, -W*0.20, 0, 0, -W*0.05, L*0.40);
+    dome.addColorStop(0, 'rgba(240,250,255,0.95)');
+    dome.addColorStop(0.6, 'rgba(110,200,255,0.85)');
+    dome.addColorStop(1, 'rgba(20,40,120,0.9)');
+    c.fillStyle = dome; c.fill(); c.stroke();
+    // ring lights
+    for (let i=-3;i<=3;i++){
+      c.shadowColor = accent; c.shadowBlur = 6*pulse;
+      c.fillStyle = i%2===0 ? '#FFF' : accent;
+      c.beginPath(); c.arc(i*(L*0.22), W*0.42, W*0.07, 0, Math.PI*2); c.fill();
+      c.shadowBlur = 0;
+    }
+    return;
+  }
+
+  if (shape === 'fighter') {
+    flame(-W*0.20, L*1.1); flame(W*0.20, L*1.1);
+    // fuselage
+    c.beginPath();
+    c.moveTo( L*1.00, 0);
+    c.quadraticCurveTo( L*0.3, W*0.20, -L*0.70, W*0.18);
+    c.lineTo(-L*0.70, -W*0.18);
+    c.quadraticCurveTo( L*0.3, -W*0.20, L*1.00, 0);
+    c.closePath();
+    const g = c.createLinearGradient(0,-W*0.3,0,W*0.3);
+    g.addColorStop(0, light); g.addColorStop(0.5, base); g.addColorStop(1, dark);
+    c.fillStyle = g; c.fill(); c.stroke();
+    // 4 X-wings
+    for (const sx of [1,-1]) for (const sy of [1,-1]) {
+      c.save(); c.scale(1, sy);
+      c.beginPath();
+      c.moveTo( L*0.10*sx,  W*0.10);
+      c.lineTo( L*0.55*sx,  W*1.05);
+      c.lineTo( L*0.20*sx,  W*1.05);
+      c.lineTo(-L*0.20*sx,  W*0.10);
+      c.closePath();
+      c.fillStyle = dark; c.fill();
+      c.strokeStyle = `${glow}${(0.85*pulse).toFixed(2)})`;
+      c.lineWidth = Math.max(1, W*0.08);
+      c.beginPath(); c.moveTo(L*0.52*sx, W*1.0); c.lineTo(L*0.22*sx, W*1.0); c.stroke();
+      c.strokeStyle = stroke; c.lineWidth = lw;
+      c.restore();
+    }
+    cockpit(L*0.30, W*0.25);
+    return;
+  }
+
+  if (shape === 'cruiser') {
+    flame(-W*0.45, L*1.2); flame(0, L*1.4); flame(W*0.45, L*1.2);
+    c.beginPath();
+    c.moveTo( L*1.05, 0);
+    c.lineTo( L*0.55,  W*0.70);
+    c.lineTo(-L*0.65,  W*0.85);
+    c.lineTo(-L*0.85,  W*0.55);
+    c.lineTo(-L*0.85, -W*0.55);
+    c.lineTo(-L*0.65, -W*0.85);
+    c.lineTo( L*0.55, -W*0.70);
+    c.closePath();
+    const g = c.createLinearGradient(0,-W*0.9,0,W*0.9);
+    g.addColorStop(0, light); g.addColorStop(0.5, base); g.addColorStop(1, dark);
+    c.fillStyle = g; c.fill(); c.stroke();
+    // panel lines
+    c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 0.7;
+    c.beginPath();
+    c.moveTo(L*0.5, W*0.55); c.lineTo(-L*0.7, W*0.55);
+    c.moveTo(L*0.5, -W*0.55); c.lineTo(-L*0.7, -W*0.55);
+    c.moveTo(L*0.0, W*0.75); c.lineTo(L*0.0, -W*0.75);
+    c.stroke();
+    c.strokeStyle = stroke; c.lineWidth = lw;
+    // bridge
+    c.fillStyle = accent;
+    c.beginPath(); c.arc(L*0.20, 0, W*0.18, 0, Math.PI*2); c.fill();
+    cockpit(L*0.55, W*0.16);
+    return;
+  }
+
+  if (shape === 'interceptor') {
+    flame(0, L*1.6);
+    // long needle hull
+    c.beginPath();
+    c.moveTo( L*1.15, 0);
+    c.lineTo( L*0.10, W*0.22);
+    c.lineTo(-L*0.80, W*0.18);
+    c.lineTo(-L*0.80,-W*0.18);
+    c.lineTo( L*0.10,-W*0.22);
+    c.closePath();
+    const g = c.createLinearGradient(L,0,-L*0.8,0);
+    g.addColorStop(0, light); g.addColorStop(0.5, base); g.addColorStop(1, dark);
+    c.fillStyle = g; c.fill(); c.stroke();
+    // forward-swept wings
+    for (const sy of [1,-1]) {
+      c.save(); c.scale(1, sy);
+      c.beginPath();
+      c.moveTo(-L*0.30, W*0.18);
+      c.lineTo( L*0.30, W*0.95);
+      c.lineTo( L*0.05, W*1.00);
+      c.lineTo(-L*0.55, W*0.20);
+      c.closePath();
+      c.fillStyle = dark; c.fill(); c.stroke();
+      c.restore();
+    }
+    cockpit(L*0.40, W*0.16);
+    return;
+  }
+
+  if (shape === 'shuttle') {
+    flame(-W*0.25, L*0.9); flame(W*0.25, L*0.9);
+    // boxy hull with rounded nose
+    c.beginPath();
+    c.moveTo( L*0.95, W*0.10);
+    c.quadraticCurveTo( L*1.05, 0, L*0.95, -W*0.10);
+    c.lineTo( L*0.95,-W*0.55);
+    c.lineTo(-L*0.85,-W*0.55);
+    c.lineTo(-L*0.85, W*0.55);
+    c.lineTo( L*0.95, W*0.55);
+    c.closePath();
+    const g = c.createLinearGradient(0,-W*0.6,0,W*0.6);
+    g.addColorStop(0, light); g.addColorStop(0.5, base); g.addColorStop(1, dark);
+    c.fillStyle = g; c.fill(); c.stroke();
+    // windows row
+    c.fillStyle = accent;
+    for (let i=0;i<4;i++){
+      c.fillRect(L*0.45 - i*L*0.30, -W*0.12, L*0.18, W*0.24);
+    }
+    // stubby wings
+    for (const sy of [1,-1]) {
+      c.save(); c.scale(1, sy);
+      c.beginPath();
+      c.moveTo(-L*0.30, W*0.55); c.lineTo(-L*0.20, W*0.95);
+      c.lineTo(-L*0.70, W*0.95); c.lineTo(-L*0.75, W*0.55);
+      c.closePath();
+      c.fillStyle = dark; c.fill(); c.stroke();
+      c.restore();
+    }
+    return;
+  }
+
+  if (shape === 'stealth') {
+    // wide flat delta (B-2 style)
+    flame(0, L*0.9);
+    c.beginPath();
+    c.moveTo( L*0.95, 0);
+    c.lineTo( L*0.10, W*1.10);
+    c.lineTo(-L*0.40, W*0.85);
+    c.lineTo(-L*0.20, W*0.30);
+    c.lineTo(-L*0.55, 0);
+    c.lineTo(-L*0.20,-W*0.30);
+    c.lineTo(-L*0.40,-W*0.85);
+    c.lineTo( L*0.10,-W*1.10);
+    c.closePath();
+    const g = c.createLinearGradient(0,-W,0,W);
+    g.addColorStop(0, light); g.addColorStop(0.5, base); g.addColorStop(1, dark);
+    c.fillStyle = g; c.fill(); c.stroke();
+    // facet line
+    c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 0.8;
+    c.beginPath();
+    c.moveTo(L*0.95, 0); c.lineTo(-L*0.55, 0); c.stroke();
+    c.strokeStyle = stroke; c.lineWidth = lw;
+    cockpit(L*0.35, W*0.18);
+    return;
+  }
+
+  if (shape === 'twin') {
+    flame(-W*0.55, L*1.1); flame(W*0.55, L*1.1);
+    // two parallel hulls + center connector
+    for (const sy of [1,-1]) {
+      c.save(); c.scale(1, sy);
+      c.beginPath();
+      c.moveTo( L*0.95,  W*0.40);
+      c.quadraticCurveTo( L*0.4, W*0.30, -L*0.10, W*0.35);
+      c.lineTo(-L*0.75, W*0.40);
+      c.lineTo(-L*0.75, W*0.75);
+      c.quadraticCurveTo(-L*0.20, W*0.85, L*0.50, W*0.78);
+      c.quadraticCurveTo( L*0.90, W*0.70, L*0.95, W*0.40);
+      c.closePath();
+      const g = c.createLinearGradient(0, W*0.3, 0, W*0.85);
+      g.addColorStop(0, light); g.addColorStop(1, dark);
+      c.fillStyle = g; c.fill(); c.stroke();
+      c.restore();
+    }
+    // center connector
+    c.beginPath();
+    c.moveTo( L*0.30,  W*0.40);
+    c.lineTo( L*0.30, -W*0.40);
+    c.lineTo(-L*0.40, -W*0.40);
+    c.lineTo(-L*0.40,  W*0.40);
+    c.closePath();
+    c.fillStyle = base; c.fill(); c.stroke();
+    cockpit(0, W*0.22);
+    return;
+  }
+
+  if (shape === 'orb') {
+    // soft aura
+    const ag = c.createRadialGradient(0,0,L*0.4,0,0,L*1.3);
+    ag.addColorStop(0, `${glow}${(0.28*pulse).toFixed(2)})`); ag.addColorStop(1, `${glow}0)`);
+    c.fillStyle = ag; c.beginPath(); c.arc(0,0,L*1.3,0,Math.PI*2); c.fill();
+    // sphere body
+    c.beginPath(); c.arc(0, 0, L*0.70, 0, Math.PI*2);
+    const sg = c.createRadialGradient(-L*0.20, -L*0.20, L*0.05, 0, 0, L*0.75);
+    sg.addColorStop(0, light); sg.addColorStop(0.5, base); sg.addColorStop(1, dark);
+    c.fillStyle = sg; c.fill(); c.stroke();
+    // equator stripe
+    c.strokeStyle = accent; c.lineWidth = Math.max(1.2, W*0.08);
+    c.beginPath(); c.ellipse(0, 0, L*0.70, W*0.18, 0, 0, Math.PI*2); c.stroke();
+    c.strokeStyle = stroke; c.lineWidth = lw;
+    // antenna
+    c.beginPath();
+    c.moveTo(L*0.70, 0); c.lineTo(L*1.10, 0);
+    c.lineWidth = 1.4; c.stroke();
+    c.shadowColor = accent; c.shadowBlur = 8*pulse;
+    c.fillStyle = '#FFF';
+    c.beginPath(); c.arc(L*1.12, 0, W*0.12*pulse, 0, Math.PI*2); c.fill();
+    c.shadowBlur = 0;
+    cockpit(0, W*0.30);
+    return;
+  }
+
+  // Unknown shape — render nothing (caller will fall back via shipShape()='classic')
+}
+
 // ── Sci-fi spaceship with engine glow, wings, cockpit ─────────────
+
 function drawShip(ship) {
   const dp = getShipDrawPos(ship);
   const cx = dp.x, cy = dp.y;
@@ -3600,18 +3889,29 @@ function drawShip(ship) {
     return;
   }
 
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(angle);
-
   const L = rad * 1.05;     // half length (nose to tail)
   const W = rad * 0.62;     // half width
 
   // Shared per-ship animated pulse (engines, cockpit shimmer, lights)
-  // ship.id is a string like 'hs'/'hd' — turn it into a stable numeric phase offset
   const idPhase = (String(ship.id).charCodeAt(0) || 0) + (String(ship.id).charCodeAt(1) || 0);
   const pulse  = 0.80 + 0.20 * Math.sin(waveOffset * 0.18 + idPhase * 0.13);
   const pulse2 = 0.50 + 0.50 * Math.sin(waveOffset * 0.30 + idPhase * 0.09);
+
+  // Dispatch to alt-shape silhouette (cosmetic ship-skin choice).
+  const _shape = shipShape(ship);
+  if (_shape && _shape !== 'classic') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    drawAltShipShape(_shape, ctx, L, W, pal, pulse, pulse2, sel);
+    ctx.restore();
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+
 
   // Tinted accent colors
   const accentColor = pal.accent;
@@ -5266,19 +5566,19 @@ function closeNoCoinModal() {
 // SHIP SKINS — cosmetic palette picker for the player's fleet
 // ═══════════════════════════════════════════════════════════
 window.ShipSkins = (() => {
-  
-  // 10 cosmetic skins. Each is a full palette compatible with shipPlayerPalette().
+  // 10 cosmetic SHAPES. The 'color' here is only used for the picker preview;
+  // in-game the ship always uses the player's color so opponents can tell ships apart.
   const SKINS = [
-    { id:'classic',  name:'Classic Red',   emoji:'🚀', color:'#E53935', light:'#FFAB91', dark:'#5D0000', glow:'rgba(255,140,140,', rgb:'229,57,53',  accent:'#80FFA8', inner:'#E8FFD8', mid:'#7CFFB0' },
-    { id:'emerald',  name:'Emerald',       emoji:'🛸', color:'#2E7D32', light:'#A5D6A7', dark:'#0D3D11', glow:'rgba(120,255,150,', rgb:'46,125,50',  accent:'#FFB070', inner:'#FFE8D0', mid:'#FF9070' },
-    { id:'sunburst', name:'Sunburst',      emoji:'☀️', color:'#FF8800', light:'#FFD580', dark:'#5D3000', glow:'rgba(255,180,80,',  rgb:'255,136,0',  accent:'#80EAFF', inner:'#E0F8FF', mid:'#40D0F0' },
-    { id:'cyber',    name:'Cyber Cyan',    emoji:'💠', color:'#00ACC1', light:'#80DEEA', dark:'#003D4D', glow:'rgba(100,220,255,', rgb:'0,172,193',  accent:'#FFD54F', inner:'#FFF8E0', mid:'#FFCC00' },
-    { id:'violet',   name:'Royal Violet',  emoji:'👾', color:'#7E57C2', light:'#D1C4E9', dark:'#311B92', glow:'rgba(180,140,255,', rgb:'126,87,194', accent:'#FFD54F', inner:'#FFF1C8', mid:'#FFC107' },
-    { id:'rose',     name:'Neon Rose',     emoji:'🌹', color:'#EC407A', light:'#F8BBD0', dark:'#6A0034', glow:'rgba(255,150,200,', rgb:'236,64,122', accent:'#80FFEA', inner:'#E8FFF8', mid:'#40FFD0' },
-    { id:'gold',     name:'Solar Gold',    emoji:'⭐', color:'#FFB300', light:'#FFE082', dark:'#5D3F00', glow:'rgba(255,210,100,', rgb:'255,179,0',  accent:'#4FC3F7', inner:'#DDF4FF', mid:'#29B6F6' },
-    { id:'frost',    name:'Frost Blue',    emoji:'❄️', color:'#42A5F5', light:'#BBDEFB', dark:'#0D3B66', glow:'rgba(150,200,255,', rgb:'66,165,245', accent:'#FFCC80', inner:'#FFF1D8', mid:'#FFA726' },
-    { id:'lime',     name:'Toxic Lime',    emoji:'☢️', color:'#9CCC65', light:'#DCEDC8', dark:'#33691E', glow:'rgba(200,255,140,', rgb:'156,204,101',accent:'#CE93D8', inner:'#F5E8FA', mid:'#AB47BC' },
-    { id:'crimson',  name:'Stealth Black', emoji:'🦇', color:'#37474F', light:'#90A4AE', dark:'#0A1518', glow:'rgba(120,150,170,', rgb:'55,71,79',   accent:'#FF5252', inner:'#FFE0E0', mid:'#E53935' },
+    { id:'classic',     name:'Classic Dart',  emoji:'🚀', shape:'classic' },
+    { id:'arrow',       name:'Arrowhead',     emoji:'➤',  shape:'arrow' },
+    { id:'saucer',      name:'UFO Saucer',    emoji:'🛸', shape:'saucer' },
+    { id:'fighter',     name:'X-Fighter',     emoji:'✦',  shape:'fighter' },
+    { id:'cruiser',     name:'Heavy Cruiser', emoji:'🛰️', shape:'cruiser' },
+    { id:'interceptor', name:'Interceptor',   emoji:'⚡',  shape:'interceptor' },
+    { id:'shuttle',     name:'Shuttle',       emoji:'🚀', shape:'shuttle' },
+    { id:'stealth',     name:'Stealth Wing',  emoji:'🦇', shape:'stealth' },
+    { id:'twin',        name:'Twin Hull',     emoji:'⛴️', shape:'twin' },
+    { id:'orb',         name:'Probe Orb',     emoji:'⚪', shape:'orb' },
   ];
   const KEY = 'st_ship_skins'; // per-slot: { s: id, d: id }
   const LEGACY_KEY = 'st_ship_skin';
@@ -5299,6 +5599,7 @@ window.ShipSkins = (() => {
   return { list, getActiveFor, getIdFor, setIdFor };
 })();
 
+
 // Ship slot definitions (human player's two ships)
 const SHIP_SLOTS = [
   { key:'s', label:'Scout',     emoji:'🛰️', shipId:'h0s' },
@@ -5310,7 +5611,7 @@ function openShipsModal() {
   _pendingSkinId = null;
   document.getElementById('ships-slot-picker').style.display = 'none';
   document.getElementById('ships-skin-grid').style.display = 'grid';
-  document.getElementById('ships-skin-help').textContent = 'Pick a paint job, then choose which ship to apply it to.';
+  document.getElementById('ships-skin-help').textContent = 'Pick a ship shape, then choose which ship to apply it to. (Your color stays the same.)';
   const grid = document.getElementById('ships-skin-grid');
   const activeS = window.ShipSkins.getIdFor('s');
   const activeD = window.ShipSkins.getIdFor('d');
@@ -5322,18 +5623,18 @@ function openShipsModal() {
     return `
     <button onclick="selectShipSkin('${s.id}')" data-skin-id="${s.id}"
       style="position:relative;padding:12px 10px;border-radius:12px;cursor:pointer;
-             background:linear-gradient(160deg, ${s.dark} 0%, #0a0820 100%);
-             border:2px solid ${inUse ? s.light : 'rgba(255,255,255,0.08)'};
-             box-shadow:${inUse ? '0 0 0 2px ' + s.color + ', 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
+             background:linear-gradient(160deg, #1a1438 0%, #0a0820 100%);
+             border:2px solid ${inUse ? '#7C4DFF' : 'rgba(255,255,255,0.08)'};
+             box-shadow:${inUse ? '0 0 0 2px #7C4DFF, 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
              display:flex;flex-direction:column;align-items:center;gap:6px;">
       <div style="width:46px;height:46px;border-radius:50%;
-                  background:radial-gradient(circle at 35% 30%, ${s.light}, ${s.color} 55%, ${s.dark});
-                  display:flex;align-items:center;justify-content:center;font-size:22px;
-                  box-shadow:0 0 14px ${s.color}aa, inset 0 0 8px rgba(255,255,255,0.25);">
+                  background:radial-gradient(circle at 35% 30%, #6b5fb5, #3b2f80 55%, #1a1248);
+                  display:flex;align-items:center;justify-content:center;font-size:24px;
+                  box-shadow:0 0 14px rgba(124,77,255,0.5), inset 0 0 8px rgba(255,255,255,0.18);">
         ${s.emoji}
       </div>
       <div style="font-size:11px;font-weight:800;color:#fff;text-align:center;">${s.name}</div>
-      ${badge ? `<div style="position:absolute;top:6px;right:6px;background:${s.color};color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">${badge}</div>` : ''}
+      ${badge ? `<div style="position:absolute;top:6px;right:6px;background:#7C4DFF;color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">${badge}</div>` : ''}
     </button>`;
   }).join('');
   document.getElementById('ships-modal').style.display = 'flex';
@@ -5346,7 +5647,7 @@ function selectShipSkin(id) {
   const skin = window.ShipSkins.list().find(x => x.id === id);
   document.getElementById('ships-skin-grid').style.display = 'none';
   document.getElementById('ships-skin-help').innerHTML =
-    `Apply <b style="color:${skin.color};">${skin.name}</b> to which ship?`;
+    `Apply <b style="color:#B39DDB;">${skin.name}</b> shape to which ship?`;
   const picker = document.getElementById('ships-slot-picker');
   picker.style.display = 'flex';
   picker.innerHTML = SHIP_SLOTS.map(slot => {
@@ -5354,25 +5655,26 @@ function selectShipSkin(id) {
     return `
       <button onclick="applySkinToSlot('${slot.key}')"
         style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer;
-               background:linear-gradient(160deg, ${cur.dark} 0%, #0a0820 100%);
+               background:linear-gradient(160deg, #1a1438 0%, #0a0820 100%);
                border:2px solid rgba(255,255,255,0.12);text-align:left;">
         <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;
-                    background:radial-gradient(circle at 35% 30%, ${cur.light}, ${cur.color} 55%, ${cur.dark});
-                    display:flex;align-items:center;justify-content:center;font-size:20px;
-                    box-shadow:0 0 12px ${cur.color}aa;">${slot.emoji}</div>
+                    background:radial-gradient(circle at 35% 30%, #6b5fb5, #3b2f80 55%, #1a1248);
+                    display:flex;align-items:center;justify-content:center;font-size:22px;
+                    box-shadow:0 0 12px rgba(124,77,255,0.5);">${slot.emoji}</div>
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:900;color:#fff;">${slot.label}</div>
           <div style="font-size:10px;color:#B39DDB;">Currently: ${cur.name}</div>
         </div>
-        <div style="font-size:18px;color:${skin.color};">→</div>
+        <div style="font-size:18px;color:#B39DDB;">→</div>
       </button>`;
   }).join('') + `
     <button onclick="openShipsModal()"
       style="padding:8px;border-radius:10px;cursor:pointer;background:transparent;
              border:1px solid rgba(255,255,255,0.15);color:#B39DDB;font-size:11px;font-weight:700;">
-      ← Back to skins
+      ← Back to shapes
     </button>`;
 }
+
 function applySkinToSlot(slotKey) {
   if (!_pendingSkinId) return;
   window.ShipSkins.setIdFor(slotKey, _pendingSkinId);
