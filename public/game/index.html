@@ -1600,15 +1600,21 @@ function currentAiPlayer()    { return currentPlayer(); }
 
 function shipPlayerPalette(ship) {
   const pl = allPlayers.find(p => p.shipIds && p.shipIds.has(ship.id));
-  const basePal = pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
-  // Apply player-chosen skin only to the local human's ships (ids starting with 'h0')
-  if (window.ShipSkins && pl && !pl.isAi && ship.id && ship.id.startsWith('h0')) {
-    const slot = ship.id.endsWith('s') ? 's' : (ship.id.endsWith('d') ? 'd' : null);
-    const skin = slot ? window.ShipSkins.getActiveFor(slot) : null;
-    if (skin) return skin;
-  }
-  return basePal;
+  // Player color stays the player's color — skins only change shape, not color.
+  return pl ? pl.palette : PALETTES[ship.owner === 'human' ? 0 : 1];
 }
+
+// Returns the shape id ('classic' by default) for the local human's ships.
+function shipShape(ship) {
+  if (!window.ShipSkins || !ship || !ship.id || !ship.id.startsWith('h0')) return 'classic';
+  const pl = allPlayers.find(p => p.shipIds && p.shipIds.has(ship.id));
+  if (!pl || pl.isAi) return 'classic';
+  const slot = ship.id.endsWith('s') ? 's' : (ship.id.endsWith('d') ? 'd' : null);
+  if (!slot) return 'classic';
+  const skin = window.ShipSkins.getActiveFor(slot);
+  return (skin && skin.shape) || 'classic';
+}
+
 
 function setupGamePlayers(numHumans, numAIs) {
   currentPlayerIdx = 0;
@@ -5266,19 +5272,19 @@ function closeNoCoinModal() {
 // SHIP SKINS — cosmetic palette picker for the player's fleet
 // ═══════════════════════════════════════════════════════════
 window.ShipSkins = (() => {
-  
-  // 10 cosmetic skins. Each is a full palette compatible with shipPlayerPalette().
+  // 10 cosmetic SHAPES. The 'color' here is only used for the picker preview;
+  // in-game the ship always uses the player's color so opponents can tell ships apart.
   const SKINS = [
-    { id:'classic',  name:'Classic Red',   emoji:'🚀', color:'#E53935', light:'#FFAB91', dark:'#5D0000', glow:'rgba(255,140,140,', rgb:'229,57,53',  accent:'#80FFA8', inner:'#E8FFD8', mid:'#7CFFB0' },
-    { id:'emerald',  name:'Emerald',       emoji:'🛸', color:'#2E7D32', light:'#A5D6A7', dark:'#0D3D11', glow:'rgba(120,255,150,', rgb:'46,125,50',  accent:'#FFB070', inner:'#FFE8D0', mid:'#FF9070' },
-    { id:'sunburst', name:'Sunburst',      emoji:'☀️', color:'#FF8800', light:'#FFD580', dark:'#5D3000', glow:'rgba(255,180,80,',  rgb:'255,136,0',  accent:'#80EAFF', inner:'#E0F8FF', mid:'#40D0F0' },
-    { id:'cyber',    name:'Cyber Cyan',    emoji:'💠', color:'#00ACC1', light:'#80DEEA', dark:'#003D4D', glow:'rgba(100,220,255,', rgb:'0,172,193',  accent:'#FFD54F', inner:'#FFF8E0', mid:'#FFCC00' },
-    { id:'violet',   name:'Royal Violet',  emoji:'👾', color:'#7E57C2', light:'#D1C4E9', dark:'#311B92', glow:'rgba(180,140,255,', rgb:'126,87,194', accent:'#FFD54F', inner:'#FFF1C8', mid:'#FFC107' },
-    { id:'rose',     name:'Neon Rose',     emoji:'🌹', color:'#EC407A', light:'#F8BBD0', dark:'#6A0034', glow:'rgba(255,150,200,', rgb:'236,64,122', accent:'#80FFEA', inner:'#E8FFF8', mid:'#40FFD0' },
-    { id:'gold',     name:'Solar Gold',    emoji:'⭐', color:'#FFB300', light:'#FFE082', dark:'#5D3F00', glow:'rgba(255,210,100,', rgb:'255,179,0',  accent:'#4FC3F7', inner:'#DDF4FF', mid:'#29B6F6' },
-    { id:'frost',    name:'Frost Blue',    emoji:'❄️', color:'#42A5F5', light:'#BBDEFB', dark:'#0D3B66', glow:'rgba(150,200,255,', rgb:'66,165,245', accent:'#FFCC80', inner:'#FFF1D8', mid:'#FFA726' },
-    { id:'lime',     name:'Toxic Lime',    emoji:'☢️', color:'#9CCC65', light:'#DCEDC8', dark:'#33691E', glow:'rgba(200,255,140,', rgb:'156,204,101',accent:'#CE93D8', inner:'#F5E8FA', mid:'#AB47BC' },
-    { id:'crimson',  name:'Stealth Black', emoji:'🦇', color:'#37474F', light:'#90A4AE', dark:'#0A1518', glow:'rgba(120,150,170,', rgb:'55,71,79',   accent:'#FF5252', inner:'#FFE0E0', mid:'#E53935' },
+    { id:'classic',     name:'Classic Dart',  emoji:'🚀', shape:'classic' },
+    { id:'arrow',       name:'Arrowhead',     emoji:'➤',  shape:'arrow' },
+    { id:'saucer',      name:'UFO Saucer',    emoji:'🛸', shape:'saucer' },
+    { id:'fighter',     name:'X-Fighter',     emoji:'✦',  shape:'fighter' },
+    { id:'cruiser',     name:'Heavy Cruiser', emoji:'🛰️', shape:'cruiser' },
+    { id:'interceptor', name:'Interceptor',   emoji:'⚡',  shape:'interceptor' },
+    { id:'shuttle',     name:'Shuttle',       emoji:'🚀', shape:'shuttle' },
+    { id:'stealth',     name:'Stealth Wing',  emoji:'🦇', shape:'stealth' },
+    { id:'twin',        name:'Twin Hull',     emoji:'⛴️', shape:'twin' },
+    { id:'orb',         name:'Probe Orb',     emoji:'⚪', shape:'orb' },
   ];
   const KEY = 'st_ship_skins'; // per-slot: { s: id, d: id }
   const LEGACY_KEY = 'st_ship_skin';
@@ -5298,6 +5304,7 @@ window.ShipSkins = (() => {
   function list() { return SKINS; }
   return { list, getActiveFor, getIdFor, setIdFor };
 })();
+
 
 // Ship slot definitions (human player's two ships)
 const SHIP_SLOTS = [
