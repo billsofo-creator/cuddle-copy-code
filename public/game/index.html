@@ -5280,22 +5280,51 @@ window.ShipSkins = (() => {
     { id:'lime',     name:'Toxic Lime',    emoji:'☢️', color:'#9CCC65', light:'#DCEDC8', dark:'#33691E', glow:'rgba(200,255,140,', rgb:'156,204,101',accent:'#CE93D8', inner:'#F5E8FA', mid:'#AB47BC' },
     { id:'crimson',  name:'Stealth Black', emoji:'🦇', color:'#37474F', light:'#90A4AE', dark:'#0A1518', glow:'rgba(120,150,170,', rgb:'55,71,79',   accent:'#FF5252', inner:'#FFE0E0', mid:'#E53935' },
   ];
-  function getId() { try { return localStorage.getItem(KEY) || 'classic'; } catch(e){ return 'classic'; } }
-  function setId(id) { try { localStorage.setItem(KEY, id); } catch(e){} }
-  function getActive() { return SKINS.find(s => s.id === getId()) || SKINS[0]; }
+  const KEY = 'st_ship_skins'; // per-slot: { s: id, d: id }
+  const LEGACY_KEY = 'st_ship_skin';
+  function _read() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) return JSON.parse(raw) || {};
+      const legacy = localStorage.getItem(LEGACY_KEY);
+      if (legacy) return { s: legacy, d: legacy };
+    } catch(e){}
+    return {};
+  }
+  function _write(obj) { try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch(e){} }
+  function getIdFor(slot) { return _read()[slot] || 'classic'; }
+  function setIdFor(slot, id) { const o = _read(); o[slot] = id; _write(o); }
+  function getActiveFor(slot) { return SKINS.find(s => s.id === getIdFor(slot)) || SKINS[0]; }
   function list() { return SKINS; }
-  return { list, getActive, getId, setId };
+  return { list, getActiveFor, getIdFor, setIdFor };
 })();
 
+// Ship slot definitions (human player's two ships)
+const SHIP_SLOTS = [
+  { key:'s', label:'Scout',     emoji:'🛰️', shipId:'h0s' },
+  { key:'d', label:'Destroyer', emoji:'🚀', shipId:'h0d' },
+];
+let _pendingSkinId = null;
+
 function openShipsModal() {
+  _pendingSkinId = null;
+  document.getElementById('ships-slot-picker').style.display = 'none';
+  document.getElementById('ships-skin-grid').style.display = 'grid';
+  document.getElementById('ships-skin-help').textContent = 'Pick a paint job, then choose which ship to apply it to.';
   const grid = document.getElementById('ships-skin-grid');
-  const activeId = window.ShipSkins.getId();
-  grid.innerHTML = window.ShipSkins.list().map(s => `
+  const activeS = window.ShipSkins.getIdFor('s');
+  const activeD = window.ShipSkins.getIdFor('d');
+  grid.innerHTML = window.ShipSkins.list().map(s => {
+    const inUse = (s.id === activeS) || (s.id === activeD);
+    const badge = (s.id === activeS && s.id === activeD) ? 'BOTH'
+                : (s.id === activeS) ? 'SCOUT'
+                : (s.id === activeD) ? 'DESTROYER' : '';
+    return `
     <button onclick="selectShipSkin('${s.id}')" data-skin-id="${s.id}"
       style="position:relative;padding:12px 10px;border-radius:12px;cursor:pointer;
              background:linear-gradient(160deg, ${s.dark} 0%, #0a0820 100%);
-             border:2px solid ${s.id === activeId ? s.light : 'rgba(255,255,255,0.08)'};
-             box-shadow:${s.id === activeId ? '0 0 0 2px ' + s.color + ', 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
+             border:2px solid ${inUse ? s.light : 'rgba(255,255,255,0.08)'};
+             box-shadow:${inUse ? '0 0 0 2px ' + s.color + ', 0 6px 16px rgba(0,0,0,0.5)' : '0 4px 10px rgba(0,0,0,0.4)'};
              display:flex;flex-direction:column;align-items:center;gap:6px;">
       <div style="width:46px;height:46px;border-radius:50%;
                   background:radial-gradient(circle at 35% 30%, ${s.light}, ${s.color} 55%, ${s.dark});
@@ -5304,23 +5333,59 @@ function openShipsModal() {
         ${s.emoji}
       </div>
       <div style="font-size:11px;font-weight:800;color:#fff;text-align:center;">${s.name}</div>
-      ${s.id === activeId ? `<div style="position:absolute;top:6px;right:6px;background:${s.color};color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">ACTIVE</div>` : ''}
-    </button>
-  `).join('');
-  const modal = document.getElementById('ships-modal');
-  modal.style.display = 'flex';
+      ${badge ? `<div style="position:absolute;top:6px;right:6px;background:${s.color};color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:999px;">${badge}</div>` : ''}
+    </button>`;
+  }).join('');
+  document.getElementById('ships-modal').style.display = 'flex';
 }
 function closeShipsModal() {
   document.getElementById('ships-modal').style.display = 'none';
 }
 function selectShipSkin(id) {
-  window.ShipSkins.setId(id);
-  if (typeof showToast === 'function') showToast('🚀 Skin equipped!');
-  openShipsModal(); // re-render to show new active
+  _pendingSkinId = id;
+  const skin = window.ShipSkins.list().find(x => x.id === id);
+  document.getElementById('ships-skin-grid').style.display = 'none';
+  document.getElementById('ships-skin-help').innerHTML =
+    `Apply <b style="color:${skin.color};">${skin.name}</b> to which ship?`;
+  const picker = document.getElementById('ships-slot-picker');
+  picker.style.display = 'flex';
+  picker.innerHTML = SHIP_SLOTS.map(slot => {
+    const cur = window.ShipSkins.getActiveFor(slot.key);
+    return `
+      <button onclick="applySkinToSlot('${slot.key}')"
+        style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer;
+               background:linear-gradient(160deg, ${cur.dark} 0%, #0a0820 100%);
+               border:2px solid rgba(255,255,255,0.12);text-align:left;">
+        <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;
+                    background:radial-gradient(circle at 35% 30%, ${cur.light}, ${cur.color} 55%, ${cur.dark});
+                    display:flex;align-items:center;justify-content:center;font-size:20px;
+                    box-shadow:0 0 12px ${cur.color}aa;">${slot.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:900;color:#fff;">${slot.label}</div>
+          <div style="font-size:10px;color:#B39DDB;">Currently: ${cur.name}</div>
+        </div>
+        <div style="font-size:18px;color:${skin.color};">→</div>
+      </button>`;
+  }).join('') + `
+    <button onclick="openShipsModal()"
+      style="padding:8px;border-radius:10px;cursor:pointer;background:transparent;
+             border:1px solid rgba(255,255,255,0.15);color:#B39DDB;font-size:11px;font-weight:700;">
+      ← Back to skins
+    </button>`;
+}
+function applySkinToSlot(slotKey) {
+  if (!_pendingSkinId) return;
+  window.ShipSkins.setIdFor(slotKey, _pendingSkinId);
+  if (typeof showToast === 'function') {
+    const slot = SHIP_SLOTS.find(s => s.key === slotKey);
+    showToast(`🚀 ${slot.label} skin equipped!`);
+  }
+  openShipsModal();
 }
 window.openShipsModal = openShipsModal;
 window.closeShipsModal = closeShipsModal;
 window.selectShipSkin = selectShipSkin;
+window.applySkinToSlot = applySkinToSlot;
 
 // initial UI paint
 try { Coins.renderUI(); } catch(e) {}
