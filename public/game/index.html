@@ -4864,7 +4864,8 @@ function _olLoadSocketIO(cb) {
 }
 
 function enterOnlineLobby() {
-  if (!Coins.trySpend()) { showNoCoinModal(); return; }
+  // Coin is spent when the match actually starts (see olOnRoomReady), not on entering the lobby
+  if (Coins.get() <= 0) { showNoCoinModal(); return; }
   hideMenu();
   document.getElementById('online-lobby').classList.add('show');
   document.getElementById('ol-code-box').style.display    = 'none';
