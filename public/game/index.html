@@ -4981,6 +4981,8 @@ function olOnRoomReady(data) {
     stopMenuMusic();
     document.getElementById('online-lobby').classList.remove('show');
     onlineMode = true;
+    // Spend coin only now that the match is actually starting
+    try { Coins.trySpend(); } catch(e){}
 
     if (myOnlinePlayerIdx === 0) {
       // Host: start the game engine and broadcast initial state
