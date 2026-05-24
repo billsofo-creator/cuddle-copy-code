@@ -2261,11 +2261,10 @@ function checkWin(ship) {
   const c = countIslands();
   const mine    = c[ship.owner];
   const theirs  = c[ship.owner==='human' ? 'ai' : 'human'];
+  const leads   = shipOwnerLeadsEveryOpponent(ship);
 
-  if (mine > theirs) {
+  if (leads) {
     phase='gameover'; winner=ship.owner;
-    // Determine if the local player won.
-    // team: even playerIdx → 'human', odd → 'ai' (works for 2, 3 and 4 player)
     const myTeam   = onlineMode ? (myOnlinePlayerIdx % 2 === 0 ? 'human' : 'ai') : 'human';
     const localWon = onlineMode ? ship.owner === myTeam : ship.owner === 'human';
     const msg = localWon
@@ -2275,15 +2274,28 @@ function checkWin(ship) {
         : `💀 AI Wins!\nReached your home sector\nwith ${mine} vs ${theirs} planets!`;
     showGameOver(msg);
   } else {
-    // Reached the edge but doesn't have the island majority — game continues
-    const need = theirs - mine + 1;
-    // Show the "need more planets" hint for any local player's ship
+    // Reached the edge but doesn't out-planet every opponent individually
+    const counts = countIslandsByPlayer();
+    const me = playerOfShip(ship);
+    const myCount = me ? (counts.get(me) || 0) : mine;
+    let topOpp = 0;
+    if (me) {
+      const myTeamKey = me.isAi ? 'ai' : 'human';
+      for (const p of allPlayers) {
+        if (p === me) continue;
+        if ((p.isAi ? 'ai' : 'human') === myTeamKey) continue;
+        topOpp = Math.max(topOpp, counts.get(p) || 0);
+      }
+    } else {
+      topOpp = theirs;
+    }
+    const need = topOpp - myCount + 1;
     const myPlayer = allPlayers[myOnlinePlayerIdx];
     const isMyShip = onlineMode
       ? (myPlayer && myPlayer.shipIds && myPlayer.shipIds.has(ship.id))
       : ship.owner === 'human';
     if (isMyShip) {
-      setStatus(`⚓ Your ship reached the far galaxy — but you need ${need} more planet${need>1?'s':''} to win! (${mine} vs ${theirs})`);
+      setStatus(`⚓ Your ship reached the far galaxy — but you need ${need} more planet${need>1?'s':''} than the leading opponent to win!`);
     }
   }
 }
