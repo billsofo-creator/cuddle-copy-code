@@ -2069,11 +2069,9 @@ function getValidMoves(ship, typeOverride) {
   const type = typeOverride || ship.type;
   const result = [];
   // Goal-zone rule: a ship may enter the last two rows of its finish line
-  // only when its owner currently controls MORE planets than the opponent.
-  const counts = countIslands();
-  const ownCount = ship.owner==='human' ? counts.human : counts.ai;
-  const oppCount = ship.owner==='human' ? counts.ai    : counts.human;
-  const hasPlanetLead = ownCount > oppCount;
+  // only when its owner-player currently controls MORE planets than EACH
+  // opposing player individually (not the combined opposing team).
+  const hasPlanetLead = shipOwnerLeadsEveryOpponent(ship);
   // Use per-ship goalRow to determine which end of the board is the goal zone
   const isGoalZoneRow = (r) => (ship.goalRow ?? HUMAN_WIN_ROW) === HUMAN_WIN_ROW
     ? (r <= 1)        // goal is row 0 — top two rows are the zone
