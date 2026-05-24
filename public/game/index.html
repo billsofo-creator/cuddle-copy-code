@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>Stellar Tactics — Turn-Based Star Warfare</title>
+<title>Nebula Tactics — Space Chess meets Tactical Arena</title>
 
 <!-- ══ PWA: install as native-like app on Android & iPhone ══ -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0a0220">
-<meta name="description" content="Stellar Tactics — turn-based star warfare. Deploy fleets, capture worlds, dominate the galaxy.">
+<meta name="description" content="Nebula Tactics — Space Chess meets Tactical Arena. Command the stars.">
 
 <!-- iOS-specific PWA tags (Apple does not yet honor manifest fully) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Stellar Tactics">
+<meta name="apple-mobile-web-app-title" content="Nebula Tactics">
 <link rel="apple-touch-icon" href="app-icon.png">
 <link rel="icon" type="image/png" href="app-icon.png">
 
@@ -491,12 +491,20 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   50%      { transform: translateY(-6px); }
 }
 .menu-tagline {
-  font-size: clamp(11px, 3vw, 14px);
+  font-size: clamp(12px, 3.2vw, 15px);
   letter-spacing: clamp(2px, 0.8vw, 4px);
-  color: #B39DDB; text-transform: uppercase;
-  margin-top: 10px;
-  text-shadow: 0 0 8px rgba(179,157,219,0.5);
+  color: #E1BEE7; text-transform: uppercase;
+  margin-top: 10px; font-weight: 700;
+  text-shadow: 0 0 10px rgba(225,190,231,0.55);
 }
+.menu-subtagline {
+  font-size: clamp(10px, 2.6vw, 12px);
+  letter-spacing: clamp(3px, 1vw, 5px);
+  color: #9575CD; text-transform: uppercase;
+  margin-top: 4px; font-weight: 600; font-style: italic;
+  opacity: 0.85;
+}
+
 
 /* Menu button list */
 .menu-list {
@@ -535,14 +543,29 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn .ico {
   flex-shrink: 0;
-  width: 40px; height: 40px;
+  width: 46px; height: 46px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 100%);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 10px;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,0.25));
+  font-size: 24px;
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.25) 100%);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 -6px 12px rgba(0,0,0,0.35),
+    0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
 }
+.menu-btn:hover .ico { transform: rotate(-6deg) scale(1.08); }
+.menu-btn .ico::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 14px;
+  background: inherit; filter: blur(10px); opacity: 0.55; z-index: -1;
+}
+.menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #66BB6A 45%, #1B5E20 100%); }
+.menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFE082 0%, #FFB300 45%, #E65100 100%); }
+.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #29B6F6 45%, #01579B 100%); }
+.menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #F8BBD0 0%, #EC407A 45%, #880E4F 100%); }
+
 .menu-btn .lbl {
   flex: 1; display: flex; flex-direction: column; gap: 2px;
 }
@@ -1019,10 +1042,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   <div class="auth-card">
     <div class="auth-logo-row">
       <span class="icon">🚀</span>
-      <span class="auth-game-title">STELLAR TACTICS</span>
+      <span class="auth-game-title">NEBULA TACTICS</span>
       <span class="icon">🛸</span>
     </div>
-    <div class="auth-tagline">Turn-Based Star Warfare</div>
+    <div class="auth-tagline">Space Chess meets Tactical Arena</div>
     <div class="auth-heading">Command Awaits</div>
     <div class="auth-sub">Sign in to track your campaigns,<br>climb the ranks &amp; challenge commanders worldwide.</div>
     <!-- Clerk mounts the sign-in form here -->
@@ -1036,17 +1059,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 <div id="main-menu">
   <div class="menu-title-wrap">
     <div class="menu-title-icons">
-      <span class="icon">🚀</span>
-      <span class="icon">🪐</span>
+      <span class="icon">🌌</span>
+      <span class="icon">♛</span>
       <span class="icon">🛸</span>
     </div>
-    <h1 class="menu-title">STELLAR TACTICS</h1>
-    <div class="menu-tagline">Command the Stars · Outmaneuver. Outgun. Outlast.</div>
+    <h1 class="menu-title">NEBULA TACTICS</h1>
+    <div class="menu-tagline">Space Chess meets Tactical Arena</div>
+    <div class="menu-subtagline">Command the stars</div>
   </div>
 
   <div class="menu-list">
     <button class="menu-btn primary" onclick="onMenuPlayVsAI()">
-      <span class="ico">🤖</span>
+      <span class="ico ico-ai">🤖</span>
       <span class="lbl">
         <span class="l1">Play vs AI</span>
         <span class="l2">Single player · take on the alien commander</span>
@@ -1055,7 +1079,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="openStats()">
-      <span class="ico">📊</span>
+      <span class="ico ico-stats">📊</span>
       <span class="lbl">
         <span class="l1">My Stats</span>
         <span class="l2">Wins, losses &amp; galaxy leaderboard</span>
@@ -1064,7 +1088,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="enterOnlineLobby()">
-      <span class="ico">🌐</span>
+      <span class="ico ico-online">🌐</span>
       <span class="lbl">
         <span class="l1">Online Multiplayer</span>
         <span class="l2">Battle a friend across the galaxy — live</span>
@@ -1073,7 +1097,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="onMenuShowInstructions()">
-      <span class="ico">📖</span>
+      <span class="ico ico-howto">📖</span>
       <span class="lbl">
         <span class="l1">How to Play</span>
         <span class="l2">Rules, controls & winning strategy</span>
@@ -1082,6 +1106,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
   </div>
+
 
   <!-- ═══ COIN / ENERGY widget ═══ -->
   <div id="coin-widget" style="margin-top:14px;width:100%;max-width:320px;box-sizing:border-box;
@@ -4864,7 +4889,8 @@ function _olLoadSocketIO(cb) {
 }
 
 function enterOnlineLobby() {
-  if (!Coins.trySpend()) { showNoCoinModal(); return; }
+  // Coin is spent when the match actually starts (see olOnRoomReady), not on entering the lobby
+  if (Coins.get() <= 0) { showNoCoinModal(); return; }
   hideMenu();
   document.getElementById('online-lobby').classList.add('show');
   document.getElementById('ol-code-box').style.display    = 'none';
@@ -4980,6 +5006,8 @@ function olOnRoomReady(data) {
     stopMenuMusic();
     document.getElementById('online-lobby').classList.remove('show');
     onlineMode = true;
+    // Spend coin only now that the match is actually starting
+    try { Coins.trySpend(); } catch(e){}
 
     if (myOnlinePlayerIdx === 0) {
       // Host: start the game engine and broadcast initial state
