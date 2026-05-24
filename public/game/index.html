@@ -543,28 +543,43 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn .ico {
   flex-shrink: 0;
-  width: 46px; height: 46px;
+  width: 52px; height: 52px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.25) 100%);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.28);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.35),
-    inset 0 -6px 12px rgba(0,0,0,0.35),
-    0 4px 12px rgba(0,0,0,0.4);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -8px 14px rgba(0,0,0,0.4),
+    0 6px 16px rgba(0,0,0,0.45);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease, filter 0.25s ease;
   position: relative;
+  overflow: visible;
 }
-.menu-btn:hover .ico { transform: rotate(-6deg) scale(1.08); }
+.menu-btn .ico svg {
+  width: 30px; height: 30px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 6px rgba(255,255,255,0.35));
+  position: relative; z-index: 2;
+}
+.menu-btn:hover .ico { transform: rotate(-8deg) scale(1.12); filter: brightness(1.15); }
+.menu-btn:hover .ico svg { animation: ico-pulse 1.2s ease-in-out infinite; }
+@keyframes ico-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.menu-btn .ico::before {
+  content: ''; position: absolute; inset: 0; border-radius: 13px;
+  background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 35%, transparent 65%);
+  pointer-events: none; z-index: 1;
+}
 .menu-btn .ico::after {
-  content: ''; position: absolute; inset: -2px; border-radius: 14px;
-  background: inherit; filter: blur(10px); opacity: 0.55; z-index: -1;
+  content: ''; position: absolute; inset: -3px; border-radius: 16px;
+  background: inherit; filter: blur(14px); opacity: 0.65; z-index: -1;
 }
-.menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #66BB6A 45%, #1B5E20 100%); }
-.menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFE082 0%, #FFB300 45%, #E65100 100%); }
-.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #29B6F6 45%, #01579B 100%); }
-.menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #F8BBD0 0%, #EC407A 45%, #880E4F 100%); }
+.menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #43A047 50%, #0d3a14 100%); }
+.menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFECB3 0%, #FB8C00 50%, #4a1a00 100%); }
+.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #1E88E5 50%, #0a2a4a 100%); }
+.menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #E1BEE7 0%, #8E24AA 50%, #2a0a3a 100%); }
+
 
 .menu-btn .lbl {
   flex: 1; display: flex; flex-direction: column; gap: 2px;
@@ -1070,7 +1085,16 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
   <div class="menu-list">
     <button class="menu-btn primary" onclick="onMenuPlayVsAI()">
-      <span class="ico ico-ai">🤖</span>
+      <span class="ico ico-ai" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="7" width="16" height="12" rx="3"/>
+          <path d="M12 7V3"/><circle cx="12" cy="2.5" r="1"/>
+          <circle cx="9" cy="13" r="1.4" fill="white"/>
+          <circle cx="15" cy="13" r="1.4" fill="white"/>
+          <path d="M9 17h6"/>
+          <path d="M2 12v3"/><path d="M22 12v3"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">Play vs AI</span>
         <span class="l2">Single player · take on the alien commander</span>
@@ -1079,7 +1103,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="openStats()">
-      <span class="ico ico-stats">📊</span>
+      <span class="ico ico-stats" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20h16"/>
+          <rect x="5" y="12" width="3.5" height="8" rx="1" fill="white" fill-opacity="0.25"/>
+          <rect x="10.25" y="7" width="3.5" height="13" rx="1" fill="white" fill-opacity="0.25"/>
+          <rect x="15.5" y="3" width="3.5" height="17" rx="1" fill="white" fill-opacity="0.25"/>
+          <path d="M3 8l5-4 4 3 6-5" opacity="0.7"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">My Stats</span>
         <span class="l2">Wins, losses &amp; galaxy leaderboard</span>
@@ -1088,7 +1120,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="enterOnlineLobby()">
-      <span class="ico ico-online">🌐</span>
+      <span class="ico ico-online" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <ellipse cx="12" cy="12" rx="4" ry="9"/>
+          <path d="M3 12h18"/>
+          <path d="M3.5 8.5h17"/><path d="M3.5 15.5h17"/>
+          <circle cx="18" cy="6" r="2" fill="#ff5252" stroke="none"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">Online Multiplayer</span>
         <span class="l2">Battle a friend across the galaxy — live</span>
@@ -1097,13 +1137,21 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="onMenuShowInstructions()">
-      <span class="ico ico-howto">📖</span>
+      <span class="ico ico-howto" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2V5z" fill="white" fill-opacity="0.18"/>
+          <path d="M20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 1 2 2V5z" fill="white" fill-opacity="0.18"/>
+          <path d="M12 3v17"/>
+          <circle cx="17" cy="8" r="2.2" fill="white" stroke="none"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">How to Play</span>
         <span class="l2">Rules, controls & winning strategy</span>
       </span>
       <span class="arrow">▶</span>
     </button>
+
 
   </div>
 
@@ -4595,57 +4643,118 @@ function startMenuMusic() {
   const ctx = sfxCtx();
   if (!ctx) return;
   _menuMusicOn = true;
-  stopMenuMusic._master = null;
 
   const master = ctx.createGain();
   master.gain.setValueAtTime(0, ctx.currentTime);
-  master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 3);
+  master.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 2);
   master.connect(ctx.destination);
+  _menuNodes.push(master);
 
-  // 3-layer space drone with slow LFO vibrato
-  [42, 63, 94].forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const g   = ctx.createGain();
-    const lfo = ctx.createOscillator();
-    const lg  = ctx.createGain();
-    osc.type = 'sine';      osc.frequency.value = freq;
-    lfo.type = 'sine';      lfo.frequency.value = 0.07 + i * 0.035;
-    lg.gain.value = freq * 0.09;
-    lfo.connect(lg); lg.connect(osc.frequency);
-    g.gain.value = 0.38 / 3;
-    osc.connect(g); g.connect(master);
-    osc.start(); lfo.start();
-    _menuNodes.push(osc, lfo, g, lg);
-  });
+  // Gentle reverb-ish lowpass bus for warmth
+  const warmth = ctx.createBiquadFilter();
+  warmth.type = 'lowpass';
+  warmth.frequency.value = 2400;
+  warmth.Q.value = 0.6;
+  warmth.connect(master);
+  _menuNodes.push(warmth);
 
-  // Subtle high pad — slow sawtooth through a lowpass filter
-  const pad = ctx.createOscillator();
-  const flt = ctx.createBiquadFilter();
-  const pg  = ctx.createGain();
-  pad.type = 'sawtooth'; pad.frequency.value = 130;
-  flt.type = 'lowpass';  flt.frequency.value = 380; flt.Q.value = 6;
-  pg.gain.value = 0.06;
-  pad.connect(flt); flt.connect(pg); pg.connect(master);
-  pad.start();
-  _menuNodes.push(pad, flt, pg, master);
+  // Note frequency helper (equal temperament, A4 = 440)
+  const N = (semisFromA4) => 440 * Math.pow(2, semisFromA4 / 12);
+  // Pachelbel-style progression in D: D  A  Bm  F#m  G  D  G  A
+  // Bass roots (one octave below middle):
+  const bassProg = [
+    N(-19), // D2
+    N(-24), // A1 -> actually use A2 (-12)
+    N(-22), // B2 -> Bm root
+    N(-27), // F#2
+    N(-26), // G2
+    N(-19), // D2
+    N(-26), // G2
+    N(-24)  // A2
+  ];
+  // Use cleaner octave for bass
+  const bass = [
+    N(-22), N(-15), N(-13), N(-20), N(-18), N(-22), N(-18), N(-15)
+  ]; // D2, A2, B2, F#2, G2, D2, G2, A2
 
-  // Sparkle notes — random from a pentatonic scale
-  const penta = [261, 329, 392, 523, 659, 784, 1046, 1318];
-  function spark() {
-    if (!_menuMusicOn) return;
-    const ctx2 = sfxCtx(); if (!ctx2) return;
-    const f = penta[Math.floor(Math.random() * penta.length)];
-    const o = ctx2.createOscillator(), g = ctx2.createGain();
-    o.type = 'sine'; o.frequency.value = f;
-    const vol = 0.04 + Math.random() * 0.06;
-    g.gain.setValueAtTime(0, ctx2.currentTime);
-    g.gain.linearRampToValueAtTime(vol, ctx2.currentTime + 0.06);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 1.3);
-    o.connect(g); g.connect(ctx2.destination);
-    o.start(); o.stop(ctx2.currentTime + 1.4);
-    _menuSparkle = setTimeout(spark, 900 + Math.random() * 2200);
+  // Triad chord tones (root, third, fifth) for each chord — for arpeggio
+  const chords = [
+    [N(-10), N(-6), N(-3)],   // D major:  D3 F#3 A3
+    [N(-3),  N(1),  N(4)],    // A major:  A3 C#4 E4
+    [N(-1),  N(2),  N(6)],    // B minor:  B3 D4 F#4
+    [N(-6),  N(-2), N(1)],    // F#m:     F#3 A3 C#4
+    [N(-5),  N(-1), N(2)],    // G major:  G3 B3 D4
+    [N(-10), N(-6), N(-3)],   // D major
+    [N(-5),  N(-1), N(2)],    // G major
+    [N(-3),  N(1),  N(4)]     // A major
+  ];
+
+  const beat = 0.55; // seconds per eighth-note (slow, classical)
+  const chordDur = beat * 8; // 8 eighth notes per chord
+  let step = 0;
+
+  function playBassNote(freq, when, dur) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(0.18, when + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.001, when + dur);
+    o.connect(g); g.connect(warmth);
+    o.start(when); o.stop(when + dur + 0.05);
   }
-  _menuSparkle = setTimeout(spark, 1500);
+  function playArpNote(freq, when, dur) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(0.09, when + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, when + dur);
+    o.connect(g); g.connect(warmth);
+    o.start(when); o.stop(when + dur + 0.05);
+    // Soft octave-up shimmer
+    const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+    o2.type = 'sine';
+    o2.frequency.value = freq * 2;
+    g2.gain.setValueAtTime(0, when);
+    g2.gain.linearRampToValueAtTime(0.025, when + 0.02);
+    g2.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.8);
+    o2.connect(g2); g2.connect(warmth);
+    o2.start(when); o2.stop(when + dur + 0.05);
+  }
+  function playPadChord(freqs, when, dur) {
+    freqs.forEach(f => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(0.035, when + 0.6);
+      g.gain.setValueAtTime(0.035, when + dur - 0.6);
+      g.gain.linearRampToValueAtTime(0.001, when + dur);
+      o.connect(g); g.connect(warmth);
+      o.start(when); o.stop(when + dur + 0.1);
+    });
+  }
+
+  function scheduleNext() {
+    if (!_menuMusicOn) return;
+    const startT = ctx.currentTime + 0.05;
+    const chord = chords[step % chords.length];
+    const root  = bass[step % bass.length];
+    // Bass: half + half
+    playBassNote(root, startT, chordDur * 0.55);
+    playBassNote(root, startT + chordDur * 0.5, chordDur * 0.5);
+    // Pad chord throughout
+    playPadChord(chord, startT, chordDur);
+    // Arpeggio pattern: root, fifth, third, fifth × 2 (8 eighths)
+    const pattern = [chord[0], chord[2], chord[1], chord[2], chord[0]*2, chord[2], chord[1], chord[2]];
+    for (let i = 0; i < 8; i++) {
+      playArpNote(pattern[i], startT + i * beat, beat * 1.15);
+    }
+    step++;
+    _menuSparkle = setTimeout(scheduleNext, chordDur * 1000 - 30);
+  }
+  scheduleNext();
 }
 
 function stopMenuMusic() {
@@ -4654,6 +4763,7 @@ function stopMenuMusic() {
   _menuNodes.forEach(n => { try { n.stop?.(); n.disconnect?.(); } catch(_) {} });
   _menuNodes = [];
 }
+
 
 // ── Battle SFX ──────────────────────────────────────────────────
 
