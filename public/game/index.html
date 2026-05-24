@@ -2220,7 +2220,7 @@ function applyShot(shooter, ray) {
     hitShip.row = hitShip.startRow; hitShip.col = hitShip.startCol;
     setTimeout(() => tweenShip(hitShip, fromR, fromC, hitShip.row, hitShip.col, 380), 250);
     setStatus(`💥 Hit! ${shipLabel(hitShip)} knocked off the side — reset to start!`);
-  } else if (offTopBot || shipAt(nr,nc) || isIsland(nr,nc)) {
+  } else if (offTopBot || shipAt(nr,nc) || isIsland(nr,nc) || (dr===0 || dc===0 ? hasBarrier(fromR,fromC,nr,nc) : false)) {
     sfxHit();
     setStatus(`💥 Hit! ${shipLabel(hitShip)} blocked — stays in place.`);
   } else {
