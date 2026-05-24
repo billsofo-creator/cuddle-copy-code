@@ -1085,7 +1085,16 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
   <div class="menu-list">
     <button class="menu-btn primary" onclick="onMenuPlayVsAI()">
-      <span class="ico ico-ai">🤖</span>
+      <span class="ico ico-ai" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="7" width="16" height="12" rx="3"/>
+          <path d="M12 7V3"/><circle cx="12" cy="2.5" r="1"/>
+          <circle cx="9" cy="13" r="1.4" fill="white"/>
+          <circle cx="15" cy="13" r="1.4" fill="white"/>
+          <path d="M9 17h6"/>
+          <path d="M2 12v3"/><path d="M22 12v3"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">Play vs AI</span>
         <span class="l2">Single player · take on the alien commander</span>
@@ -1094,7 +1103,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="openStats()">
-      <span class="ico ico-stats">📊</span>
+      <span class="ico ico-stats" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20h16"/>
+          <rect x="5" y="12" width="3.5" height="8" rx="1" fill="white" fill-opacity="0.25"/>
+          <rect x="10.25" y="7" width="3.5" height="13" rx="1" fill="white" fill-opacity="0.25"/>
+          <rect x="15.5" y="3" width="3.5" height="17" rx="1" fill="white" fill-opacity="0.25"/>
+          <path d="M3 8l5-4 4 3 6-5" opacity="0.7"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">My Stats</span>
         <span class="l2">Wins, losses &amp; galaxy leaderboard</span>
@@ -1103,7 +1120,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="enterOnlineLobby()">
-      <span class="ico ico-online">🌐</span>
+      <span class="ico ico-online" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <ellipse cx="12" cy="12" rx="4" ry="9"/>
+          <path d="M3 12h18"/>
+          <path d="M3.5 8.5h17"/><path d="M3.5 15.5h17"/>
+          <circle cx="18" cy="6" r="2" fill="#ff5252" stroke="none"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">Online Multiplayer</span>
         <span class="l2">Battle a friend across the galaxy — live</span>
@@ -1112,13 +1137,21 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </button>
 
     <button class="menu-btn" onclick="onMenuShowInstructions()">
-      <span class="ico ico-howto">📖</span>
+      <span class="ico ico-howto" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2V5z" fill="white" fill-opacity="0.18"/>
+          <path d="M20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 1 2 2V5z" fill="white" fill-opacity="0.18"/>
+          <path d="M12 3v17"/>
+          <circle cx="17" cy="8" r="2.2" fill="white" stroke="none"/>
+        </svg>
+      </span>
       <span class="lbl">
         <span class="l1">How to Play</span>
         <span class="l2">Rules, controls & winning strategy</span>
       </span>
       <span class="arrow">▶</span>
     </button>
+
 
   </div>
 
