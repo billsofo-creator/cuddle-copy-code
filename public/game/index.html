@@ -2013,6 +2013,50 @@ function countIslands() {
   return c;
 }
 
+// Count islands per individual player (by palette identity).
+// Returns Map<player, count>. Neutral islands are ignored.
+function countIslandsByPlayer() {
+  const counts = new Map();
+  for (const p of allPlayers) counts.set(p, 0);
+  for (const [key, owner] of islands.entries()) {
+    if (!owner) continue;
+    const pal = islandColors.get(key);
+    let pl = pal ? allPlayers.find(p => p.palette === pal) : null;
+    if (!pl) pl = allPlayers.find(p => (p.isAi ? 'ai' : 'human') === owner);
+    if (pl) counts.set(pl, (counts.get(pl) || 0) + 1);
+  }
+  return counts;
+}
+
+function playerOfShip(ship) {
+  return allPlayers.find(p => p.shipIds && p.shipIds.has(ship.id)) || null;
+}
+
+// True if the ship's owner-player has strictly MORE planets than every
+// opposing player individually (not just the combined opposing team).
+function shipOwnerLeadsEveryOpponent(ship) {
+  const me = playerOfShip(ship);
+  if (!me) {
+    // Fallback to team comparison if player lookup fails
+    const c = countIslands();
+    const own = ship.owner === 'human' ? c.human : c.ai;
+    const opp = ship.owner === 'human' ? c.ai : c.human;
+    return own > opp;
+  }
+  const counts = countIslandsByPlayer();
+  const mine = counts.get(me) || 0;
+  const myTeam = me.isAi ? 'ai' : 'human';
+  let hasOpponent = false;
+  for (const p of allPlayers) {
+    if (p === me) continue;
+    const theirTeam = p.isAi ? 'ai' : 'human';
+    if (theirTeam === myTeam) continue;
+    hasOpponent = true;
+    if (mine <= (counts.get(p) || 0)) return false;
+  }
+  return hasOpponent ? true : (mine > 0);
+}
+
 // Movement direction vectors by ship type
 const getDirs = type => type === 'straight'
   ? [[-1,0],[1,0],[0,-1],[0,1]]    // orthogonal
@@ -2025,11 +2069,9 @@ function getValidMoves(ship, typeOverride) {
   const type = typeOverride || ship.type;
   const result = [];
   // Goal-zone rule: a ship may enter the last two rows of its finish line
-  // only when its owner currently controls MORE planets than the opponent.
-  const counts = countIslands();
-  const ownCount = ship.owner==='human' ? counts.human : counts.ai;
-  const oppCount = ship.owner==='human' ? counts.ai    : counts.human;
-  const hasPlanetLead = ownCount > oppCount;
+  // only when its owner-player currently controls MORE planets than EACH
+  // opposing player individually (not the combined opposing team).
+  const hasPlanetLead = shipOwnerLeadsEveryOpponent(ship);
   // Use per-ship goalRow to determine which end of the board is the goal zone
   const isGoalZoneRow = (r) => (ship.goalRow ?? HUMAN_WIN_ROW) === HUMAN_WIN_ROW
     ? (r <= 1)        // goal is row 0 — top two rows are the zone
@@ -2178,7 +2220,7 @@ function applyShot(shooter, ray) {
     hitShip.row = hitShip.startRow; hitShip.col = hitShip.startCol;
     setTimeout(() => tweenShip(hitShip, fromR, fromC, hitShip.row, hitShip.col, 380), 250);
     setStatus(`💥 Hit! ${shipLabel(hitShip)} knocked off the side — reset to start!`);
-  } else if (offTopBot || shipAt(nr,nc) || isIsland(nr,nc)) {
+  } else if (offTopBot || shipAt(nr,nc) || isIsland(nr,nc) || (dr===0 || dc===0 ? hasBarrier(fromR,fromC,nr,nc) : false)) {
     sfxHit();
     setStatus(`💥 Hit! ${shipLabel(hitShip)} blocked — stays in place.`);
   } else {
@@ -2219,11 +2261,10 @@ function checkWin(ship) {
   const c = countIslands();
   const mine    = c[ship.owner];
   const theirs  = c[ship.owner==='human' ? 'ai' : 'human'];
+  const leads   = shipOwnerLeadsEveryOpponent(ship);
 
-  if (mine > theirs) {
+  if (leads) {
     phase='gameover'; winner=ship.owner;
-    // Determine if the local player won.
-    // team: even playerIdx → 'human', odd → 'ai' (works for 2, 3 and 4 player)
     const myTeam   = onlineMode ? (myOnlinePlayerIdx % 2 === 0 ? 'human' : 'ai') : 'human';
     const localWon = onlineMode ? ship.owner === myTeam : ship.owner === 'human';
     const msg = localWon
@@ -2233,15 +2274,28 @@ function checkWin(ship) {
         : `💀 AI Wins!\nReached your home sector\nwith ${mine} vs ${theirs} planets!`;
     showGameOver(msg);
   } else {
-    // Reached the edge but doesn't have the island majority — game continues
-    const need = theirs - mine + 1;
-    // Show the "need more planets" hint for any local player's ship
+    // Reached the edge but doesn't out-planet every opponent individually
+    const counts = countIslandsByPlayer();
+    const me = playerOfShip(ship);
+    const myCount = me ? (counts.get(me) || 0) : mine;
+    let topOpp = 0;
+    if (me) {
+      const myTeamKey = me.isAi ? 'ai' : 'human';
+      for (const p of allPlayers) {
+        if (p === me) continue;
+        if ((p.isAi ? 'ai' : 'human') === myTeamKey) continue;
+        topOpp = Math.max(topOpp, counts.get(p) || 0);
+      }
+    } else {
+      topOpp = theirs;
+    }
+    const need = topOpp - myCount + 1;
     const myPlayer = allPlayers[myOnlinePlayerIdx];
     const isMyShip = onlineMode
       ? (myPlayer && myPlayer.shipIds && myPlayer.shipIds.has(ship.id))
       : ship.owner === 'human';
     if (isMyShip) {
-      setStatus(`⚓ Your ship reached the far galaxy — but you need ${need} more planet${need>1?'s':''} to win! (${mine} vs ${theirs})`);
+      setStatus(`⚓ Your ship reached the far galaxy — but you need ${need} more planet${need>1?'s':''} than the leading opponent to win!`);
     }
   }
 }
