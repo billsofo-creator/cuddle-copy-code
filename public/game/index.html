@@ -543,28 +543,43 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn .ico {
   flex-shrink: 0;
-  width: 46px; height: 46px;
+  width: 52px; height: 52px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.25) 100%);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.28);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.35),
-    inset 0 -6px 12px rgba(0,0,0,0.35),
-    0 4px 12px rgba(0,0,0,0.4);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -8px 14px rgba(0,0,0,0.4),
+    0 6px 16px rgba(0,0,0,0.45);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease, filter 0.25s ease;
   position: relative;
+  overflow: visible;
 }
-.menu-btn:hover .ico { transform: rotate(-6deg) scale(1.08); }
+.menu-btn .ico svg {
+  width: 30px; height: 30px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 6px rgba(255,255,255,0.35));
+  position: relative; z-index: 2;
+}
+.menu-btn:hover .ico { transform: rotate(-8deg) scale(1.12); filter: brightness(1.15); }
+.menu-btn:hover .ico svg { animation: ico-pulse 1.2s ease-in-out infinite; }
+@keyframes ico-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.menu-btn .ico::before {
+  content: ''; position: absolute; inset: 0; border-radius: 13px;
+  background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 35%, transparent 65%);
+  pointer-events: none; z-index: 1;
+}
 .menu-btn .ico::after {
-  content: ''; position: absolute; inset: -2px; border-radius: 14px;
-  background: inherit; filter: blur(10px); opacity: 0.55; z-index: -1;
+  content: ''; position: absolute; inset: -3px; border-radius: 16px;
+  background: inherit; filter: blur(14px); opacity: 0.65; z-index: -1;
 }
-.menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #66BB6A 45%, #1B5E20 100%); }
-.menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFE082 0%, #FFB300 45%, #E65100 100%); }
-.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #29B6F6 45%, #01579B 100%); }
-.menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #F8BBD0 0%, #EC407A 45%, #880E4F 100%); }
+.menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #43A047 50%, #0d3a14 100%); }
+.menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFECB3 0%, #FB8C00 50%, #4a1a00 100%); }
+.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #1E88E5 50%, #0a2a4a 100%); }
+.menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #E1BEE7 0%, #8E24AA 50%, #2a0a3a 100%); }
+
 
 .menu-btn .lbl {
   flex: 1; display: flex; flex-direction: column; gap: 2px;
