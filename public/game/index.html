@@ -4339,13 +4339,14 @@ function updateUI() {
   const btnUndoBar = document.getElementById('btn-undobar');
   btnDonMov.style.display  = (phase==='moving')                                               ? '' : 'none';
   btnShoot.style.display   = (isAction && humanCanStillShoot())                               ? '' : 'none';
-  btnBarrier.style.display = (isAction && (cp?.barriers ?? 0) > 0 && !humanPlacedBarrierThisTurn) ? '' : 'none';
+  btnBarrier.style.display = (isAction && !humanPlacedBarrierThisTurn) ? '' : 'none';
   btnUndoBar.style.display = (isAction && lastHumanBarrier)                                   ? '' : 'none';
   btnEndTurn.style.display = isAction                                                          ? '' : 'none';
   btnCancel.style.display  = ['select_shooter','choose_dir','place_barrier'].includes(phase)   ? '' : 'none';
 
-  btnBarrier.textContent = `⚡ Electric Wall (${cp?.barriers ?? 0})`;
-  btnCancel.textContent  = phase==='place_barrier' ? '⏭ Skip Electric Wall' : '✖ Cancel';
+  btnBarrier.textContent = `🧱 Place Barrier`;
+  btnCancel.textContent  = phase==='place_barrier' ? '⏭ Skip Barrier' : '✖ Cancel';
+
 
   const isRemote = phase === 'remote_turn';
   document.getElementById('controls').style.display    = isRemote ? 'none' : '';
