@@ -2580,12 +2580,13 @@ function handleBarrierClick(bx, by) {
 
   barriers.add(key);
   sfxBarrier();
-  currentPlayer().barriers--;
+  // Barriers are unlimited — do not decrement a counter
   humanPlacedBarrierThisTurn = true;
   lastHumanBarrier = key;          // remember it so the player can undo
   phase = 'action';
-  setStatus(`Electric Wall placed! (${currentPlayer().barriers} stored) — you can Undo if it was a mistake.`);
+  setStatus(`Barrier wall placed — you can Undo if it was a mistake, or place another after End Turn.`);
   updateUI(); render();
+
 }
 
 function onUndoBarrier() {
