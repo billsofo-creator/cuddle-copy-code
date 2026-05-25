@@ -1331,10 +1331,12 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     </div>
 
     <div class="instr-section">
-      <h4><span class="h-ico">⚡</span>Electric Walls</h4>
-      <p>Place an Electric Wall on the grid to block enemy ships and lasers.
-         You start with a limited supply — use them wisely!</p>
+      <h4><span class="h-ico">🧱</span>Barrier Walls</h4>
+      <p>Place a barrier wall on the grid to block enemy ships and lasers.
+         You can place <b>as many walls as you like</b> — one per turn — but
+         a wall that fully seals an opponent's only path to victory is not allowed.</p>
     </div>
+
 
     <div class="instr-section">
       <h4><span class="h-ico">🏆</span>Victory</h4>
@@ -1381,8 +1383,9 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   <button id="btn-restart" onclick="onIngameMenu()">☰ Menu</button>
   <button id="btn-donmov"  onclick="onDoneMoving()">✔ Done Moving</button>
   <button id="btn-shoot"   onclick="onShoot()">🔫 Fire Laser</button>
-  <button id="btn-barrier" onclick="onBarrier()">⚡ Electric Wall (0)</button>
-  <button id="btn-undobar" onclick="onUndoBarrier()">↩ Undo Field</button>
+  <button id="btn-barrier" onclick="onBarrier()">🧱 Place Barrier</button>
+  <button id="btn-undobar" onclick="onUndoBarrier()">↩ Undo Barrier</button>
+
   <button id="btn-cancel"  onclick="onCancel()">✖ Cancel</button>
   <button id="btn-endturn" onclick="onEndTurn()">✅ End Turn</button>
 </div>
@@ -1741,8 +1744,8 @@ function buildInfoBar() {
         <span class="pname" ${nameId} style="color:${p.palette.light}">${p.name}</span>
         <div class="pstats">
           <span class="stat-pill" style="color:${p.palette.light}"><span class="ic">🪐</span><span id="stat-p${i}-islands">0</span></span>
-          <span class="stat-pill" style="color:${p.palette.light}"><span class="ic">⚡</span><span id="stat-p${i}-barriers">0</span></span>
         </div>
+
       </div>`;
     row.appendChild(card);
   });
@@ -2402,15 +2405,13 @@ function onShoot() {
 }
 
 function onBarrier() {
-  if (phase !== 'action' || currentPlayer().barriers <= 0) return;
-  if (humanPlacedBarrierThisTurn) {
-    setStatus('You can only place one Electric Wall per turn. Use Undo to redo it, or End Turn.');
-    return;
-  }
+  if (phase !== 'action') return;
+  // Unlimited barriers — no per-turn cap, no stored-count requirement
   phase = 'place_barrier'; barrierOwner = 'human';
-  setStatus('Click near the edge between two cells to place a barrier. Cancel to skip.');
+  setStatus('Click near the edge between two cells to place a barrier wall. Cancel to skip.');
   updateUI(); render();
 }
+
 
 function onCancel() {
   if (phase === 'select_shooter')              { phase = 'action'; shootingShipId = null; validShotRays = []; updateUI(); return; }
@@ -2582,24 +2583,26 @@ function handleBarrierClick(bx, by) {
 
   barriers.add(key);
   sfxBarrier();
-  currentPlayer().barriers--;
+  // Barriers are unlimited — do not decrement a counter
   humanPlacedBarrierThisTurn = true;
   lastHumanBarrier = key;          // remember it so the player can undo
   phase = 'action';
-  setStatus(`Electric Wall placed! (${currentPlayer().barriers} stored) — you can Undo if it was a mistake.`);
+  setStatus(`Barrier wall placed — you can Undo if it was a mistake, or place another after End Turn.`);
   updateUI(); render();
+
 }
 
 function onUndoBarrier() {
   if (!lastHumanBarrier || phase !== 'action') return;
   if (!barriers.has(lastHumanBarrier)) { lastHumanBarrier = null; updateUI(); return; }
   barriers.delete(lastHumanBarrier);
-  currentPlayer().barriers++;
+  // (no counter to refund — barriers are unlimited)
   humanPlacedBarrierThisTurn = false;
   lastHumanBarrier = null;
   setStatus('Barrier removed. You can place it again.');
   updateUI(); render();
 }
+
 
 
 // ================================================================
@@ -2884,35 +2887,29 @@ function aiPlaceBarrier() {
   // This means a single barrier directly above a ship (which only blocks the
   // straight 1-step move) is worth less than one that completes an existing
   // pair to fully close a diagonal hop.
-  if (currentPlayer().barriers > 0) {
+  {
     // Target ships going toward OUR starting area — i.e. heading toward the
     // opposite goal from us (they're the ones rushing past us).
     const _myGoalRow = currentPlayer().goalRow ?? AI_WIN_ROW;
     const opponents = ships.filter(s => !currentPlayer().shipIds.has(s.id));
-    // Ships whose goalRow is opposite to ours are the most threatening
     const directThreats = opponents.filter(s =>
       (s.goalRow ?? HUMAN_WIN_ROW) !== _myGoalRow
     );
     const targets = directThreats.length > 0 ? directThreats : opponents;
-    if (targets.length === 0) { currentPlayer().barriers--; return; }
+    if (targets.length === 0) return;
 
-    // Build candidate set: barrier slots adjacent to any target ship's
-    // forward (toward their goal) cells.
     const cands = new Set();
     for (const ship of targets) {
       const r=ship.row, c=ship.col;
       const goingUp = (ship.goalRow ?? HUMAN_WIN_ROW) === HUMAN_WIN_ROW;
       const nr = goingUp ? r-1 : r+1;
       if (nr < 0 || nr >= ROWS) continue;
-      // H slots in the forward direction
       for (const cc of [c-1, c, c+1]) {
         if (cc>=0 && cc<COLS) {
           const minR = Math.min(r, nr), maxR = Math.max(r, nr);
-          // Horizontal barrier between rows minR and maxR at col cc would block
           cands.add(`H:${minR},${cc}`);
         }
       }
-      // V slots beside the ship and in the forward row (close diagonals)
       for (const rr of [r, nr]) {
         for (const cc of [c-1, c]) {
           if (cc>=0 && cc<COLS-1 && rr>=0 && rr<ROWS) cands.add(`V:${rr},${cc}`);
@@ -2924,7 +2921,6 @@ function aiPlaceBarrier() {
     let best = null, bestDelta = 0;
     for (const k of cands) {
       if (barriers.has(k)) continue;
-      // Skip placements that would leave any ship unable to reach its goal.
       if (barrierTrapsAnyone(k)) continue;
       barriers.add(k);
       const delta = forwardBlockScore(targets) - baseline;
@@ -2934,12 +2930,10 @@ function aiPlaceBarrier() {
 
     if (best) {
       barriers.add(best);
-      currentPlayer().barriers--;
     } else {
-      // No useful placement right now — bank the barrier for next turn
-      // instead of wasting it.
       return;
     }
+
   }
 }
 
@@ -3283,19 +3277,69 @@ function render() {
     ctx.setLineDash([]);
   }
 
-  // ── Barriers (solid gold) ────────────────────────────────────
-  ctx.lineWidth=4; ctx.lineCap='round'; ctx.strokeStyle='#FFD700';
+  // ── Barriers (brick wall) ────────────────────────────────────
   for (const b of barriers) {
     const [type,coords]=b.split(':'); const [r,c]=coords.split(',').map(Number);
-    ctx.beginPath();
+    const thick = Math.max(6, CELL*0.16);
+    let x0, y0, w, h, horizontal;
     if (type==='V') {
       const bx=LW+(c+1)*CELL;
-      ctx.moveTo(bx,LH+r*CELL+3); ctx.lineTo(bx,LH+(r+1)*CELL-3);
+      x0 = bx - thick/2; y0 = LH + r*CELL + 2; w = thick; h = CELL - 4; horizontal=false;
     } else {
       const by=LH+(r+1)*CELL;
-      ctx.moveTo(LW+c*CELL+3,by); ctx.lineTo(LW+(c+1)*CELL-3,by);
+      x0 = LW + c*CELL + 2; y0 = by - thick/2; w = CELL - 4; h = thick; horizontal=true;
+    }
+    // base wall body
+    const wallGrad = horizontal
+      ? ctx.createLinearGradient(0, y0, 0, y0+h)
+      : ctx.createLinearGradient(x0, 0, x0+w, 0);
+    wallGrad.addColorStop(0,    '#3a2a18');
+    wallGrad.addColorStop(0.45, '#9c6b3a');
+    wallGrad.addColorStop(0.55, '#c98a4a');
+    wallGrad.addColorStop(1,    '#3a2a18');
+    ctx.fillStyle = wallGrad;
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x0, y0, w, h, thick*0.25);
+    else ctx.rect(x0, y0, w, h);
+    ctx.fill(); ctx.stroke();
+    // brick mortar lines (staggered)
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) {
+      // vertical mortar lines along the strip
+      const step = w / 4;
+      for (let i = 1; i < 4; i++) {
+        const x = x0 + i*step;
+        const offset = (i%2===0) ? 0 : h*0.5;
+        ctx.moveTo(x, y0 + offset);
+        ctx.lineTo(x, y0 + (offset === 0 ? h*0.5 : h));
+      }
+      // mid mortar horizontal
+      ctx.moveTo(x0, y0 + h*0.5);
+      ctx.lineTo(x0+w, y0 + h*0.5);
+    } else {
+      const step = h / 4;
+      for (let i = 1; i < 4; i++) {
+        const y = y0 + i*step;
+        const offset = (i%2===0) ? 0 : w*0.5;
+        ctx.moveTo(x0 + offset, y);
+        ctx.lineTo(x0 + (offset === 0 ? w*0.5 : w), y);
+      }
+      ctx.moveTo(x0 + w*0.5, y0);
+      ctx.lineTo(x0 + w*0.5, y0+h);
     }
     ctx.stroke();
+    // subtle top highlight
+    ctx.strokeStyle = 'rgba(255,220,160,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) { ctx.moveTo(x0+2, y0+1.5); ctx.lineTo(x0+w-2, y0+1.5); }
+    else            { ctx.moveTo(x0+1.5, y0+2); ctx.lineTo(x0+1.5, y0+h-2); }
+    ctx.stroke();
+
   }
 
   // ── Ships ─────────────────────────────────────────────────────
@@ -3949,6 +3993,25 @@ function drawShip(ship) {
   const darkColor  = pal.dark;
   const glowColor  = pal.glow;
 
+  // Cosmetic ship skin (applies to BOTH straight and diagonal ships) —
+  // dispatched BEFORE the default diagonal triangle so user-chosen shapes
+  // actually appear in-game for the destroyer slot too.
+  {
+    const _shapeEarly = shipShape(ship);
+    if (_shapeEarly && _shapeEarly !== 'classic') {
+      const idPhaseE = (String(ship.id).charCodeAt(0) || 0) + (String(ship.id).charCodeAt(1) || 0);
+      const pulseE  = 0.80 + 0.20 * Math.sin(waveOffset * 0.18 + idPhaseE * 0.13);
+      const pulse2E = 0.50 + 0.50 * Math.sin(waveOffset * 0.30 + idPhaseE * 0.09);
+      const Le = rad * 1.05, We = rad * 0.62;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      drawAltShipShape(_shapeEarly, ctx, Le, We, pal, pulseE, pulse2E, sel);
+      ctx.restore();
+      return;
+    }
+  }
+
   // ── DIAGONAL ships: simple triangular icon, always facing forward ──
   if (ship.type === 'diagonal') {
     const _diag_goingUp = (ship.goalRow ?? (ship.owner === 'human' ? 0 : ROWS - 1)) < ROWS / 2;
@@ -4015,6 +4078,7 @@ function drawShip(ship) {
     ctx.restore();
     return;
   }
+
 
   const L = rad * 1.05;     // half length (nose to tail)
   const W = rad * 0.62;     // half width
@@ -4319,13 +4383,14 @@ function updateUI() {
   const btnUndoBar = document.getElementById('btn-undobar');
   btnDonMov.style.display  = (phase==='moving')                                               ? '' : 'none';
   btnShoot.style.display   = (isAction && humanCanStillShoot())                               ? '' : 'none';
-  btnBarrier.style.display = (isAction && (cp?.barriers ?? 0) > 0 && !humanPlacedBarrierThisTurn) ? '' : 'none';
+  btnBarrier.style.display = (isAction && !humanPlacedBarrierThisTurn) ? '' : 'none';
   btnUndoBar.style.display = (isAction && lastHumanBarrier)                                   ? '' : 'none';
   btnEndTurn.style.display = isAction                                                          ? '' : 'none';
   btnCancel.style.display  = ['select_shooter','choose_dir','place_barrier'].includes(phase)   ? '' : 'none';
 
-  btnBarrier.textContent = `⚡ Electric Wall (${cp?.barriers ?? 0})`;
-  btnCancel.textContent  = phase==='place_barrier' ? '⏭ Skip Electric Wall' : '✖ Cancel';
+  btnBarrier.textContent = `🧱 Place Barrier`;
+  btnCancel.textContent  = phase==='place_barrier' ? '⏭ Skip Barrier' : '✖ Cancel';
+
 
   const isRemote = phase === 'remote_turn';
   document.getElementById('controls').style.display    = isRemote ? 'none' : '';
