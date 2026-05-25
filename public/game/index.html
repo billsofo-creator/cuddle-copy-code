@@ -3277,19 +3277,69 @@ function render() {
     ctx.setLineDash([]);
   }
 
-  // ── Barriers (solid gold) ────────────────────────────────────
-  ctx.lineWidth=4; ctx.lineCap='round'; ctx.strokeStyle='#FFD700';
+  // ── Barriers (brick wall) ────────────────────────────────────
   for (const b of barriers) {
     const [type,coords]=b.split(':'); const [r,c]=coords.split(',').map(Number);
-    ctx.beginPath();
+    const thick = Math.max(6, CELL*0.16);
+    let x0, y0, w, h, horizontal;
     if (type==='V') {
       const bx=LW+(c+1)*CELL;
-      ctx.moveTo(bx,LH+r*CELL+3); ctx.lineTo(bx,LH+(r+1)*CELL-3);
+      x0 = bx - thick/2; y0 = LH + r*CELL + 2; w = thick; h = CELL - 4; horizontal=false;
     } else {
       const by=LH+(r+1)*CELL;
-      ctx.moveTo(LW+c*CELL+3,by); ctx.lineTo(LW+(c+1)*CELL-3,by);
+      x0 = LW + c*CELL + 2; y0 = by - thick/2; w = CELL - 4; h = thick; horizontal=true;
+    }
+    // base wall body
+    const wallGrad = horizontal
+      ? ctx.createLinearGradient(0, y0, 0, y0+h)
+      : ctx.createLinearGradient(x0, 0, x0+w, 0);
+    wallGrad.addColorStop(0,    '#3a2a18');
+    wallGrad.addColorStop(0.45, '#9c6b3a');
+    wallGrad.addColorStop(0.55, '#c98a4a');
+    wallGrad.addColorStop(1,    '#3a2a18');
+    ctx.fillStyle = wallGrad;
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x0, y0, w, h, thick*0.25);
+    else ctx.rect(x0, y0, w, h);
+    ctx.fill(); ctx.stroke();
+    // brick mortar lines (staggered)
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) {
+      // vertical mortar lines along the strip
+      const step = w / 4;
+      for (let i = 1; i < 4; i++) {
+        const x = x0 + i*step;
+        const offset = (i%2===0) ? 0 : h*0.5;
+        ctx.moveTo(x, y0 + offset);
+        ctx.lineTo(x, y0 + (offset === 0 ? h*0.5 : h));
+      }
+      // mid mortar horizontal
+      ctx.moveTo(x0, y0 + h*0.5);
+      ctx.lineTo(x0+w, y0 + h*0.5);
+    } else {
+      const step = h / 4;
+      for (let i = 1; i < 4; i++) {
+        const y = y0 + i*step;
+        const offset = (i%2===0) ? 0 : w*0.5;
+        ctx.moveTo(x0 + offset, y);
+        ctx.lineTo(x0 + (offset === 0 ? w*0.5 : w), y);
+      }
+      ctx.moveTo(x0 + w*0.5, y0);
+      ctx.lineTo(x0 + w*0.5, y0+h);
     }
     ctx.stroke();
+    // subtle top highlight
+    ctx.strokeStyle = 'rgba(255,220,160,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) { ctx.moveTo(x0+2, y0+1.5); ctx.lineTo(x0+w-2, y0+1.5); }
+    else            { ctx.moveTo(x0+1.5, y0+2); ctx.lineTo(x0+1.5, y0+h-2); }
+    ctx.stroke();
+
   }
 
   // ── Ships ─────────────────────────────────────────────────────
