@@ -2593,12 +2593,13 @@ function onUndoBarrier() {
   if (!lastHumanBarrier || phase !== 'action') return;
   if (!barriers.has(lastHumanBarrier)) { lastHumanBarrier = null; updateUI(); return; }
   barriers.delete(lastHumanBarrier);
-  currentPlayer().barriers++;
+  // (no counter to refund — barriers are unlimited)
   humanPlacedBarrierThisTurn = false;
   lastHumanBarrier = null;
   setStatus('Barrier removed. You can place it again.');
   updateUI(); render();
 }
+
 
 
 // ================================================================
