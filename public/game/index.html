@@ -2402,15 +2402,13 @@ function onShoot() {
 }
 
 function onBarrier() {
-  if (phase !== 'action' || currentPlayer().barriers <= 0) return;
-  if (humanPlacedBarrierThisTurn) {
-    setStatus('You can only place one Electric Wall per turn. Use Undo to redo it, or End Turn.');
-    return;
-  }
+  if (phase !== 'action') return;
+  // Unlimited barriers — no per-turn cap, no stored-count requirement
   phase = 'place_barrier'; barrierOwner = 'human';
-  setStatus('Click near the edge between two cells to place a barrier. Cancel to skip.');
+  setStatus('Click near the edge between two cells to place a barrier wall. Cancel to skip.');
   updateUI(); render();
 }
+
 
 function onCancel() {
   if (phase === 'select_shooter')              { phase = 'action'; shootingShipId = null; validShotRays = []; updateUI(); return; }
