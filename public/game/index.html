@@ -3949,6 +3949,25 @@ function drawShip(ship) {
   const darkColor  = pal.dark;
   const glowColor  = pal.glow;
 
+  // Cosmetic ship skin (applies to BOTH straight and diagonal ships) —
+  // dispatched BEFORE the default diagonal triangle so user-chosen shapes
+  // actually appear in-game for the destroyer slot too.
+  {
+    const _shapeEarly = shipShape(ship);
+    if (_shapeEarly && _shapeEarly !== 'classic') {
+      const idPhaseE = (String(ship.id).charCodeAt(0) || 0) + (String(ship.id).charCodeAt(1) || 0);
+      const pulseE  = 0.80 + 0.20 * Math.sin(waveOffset * 0.18 + idPhaseE * 0.13);
+      const pulse2E = 0.50 + 0.50 * Math.sin(waveOffset * 0.30 + idPhaseE * 0.09);
+      const Le = rad * 1.05, We = rad * 0.62;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      drawAltShipShape(_shapeEarly, ctx, Le, We, pal, pulseE, pulse2E, sel);
+      ctx.restore();
+      return;
+    }
+  }
+
   // ── DIAGONAL ships: simple triangular icon, always facing forward ──
   if (ship.type === 'diagonal') {
     const _diag_goingUp = (ship.goalRow ?? (ship.owner === 'human' ? 0 : ROWS - 1)) < ROWS / 2;
@@ -4015,6 +4034,7 @@ function drawShip(ship) {
     ctx.restore();
     return;
   }
+
 
   const L = rad * 1.05;     // half length (nose to tail)
   const W = rad * 0.62;     // half width
