@@ -2887,35 +2887,29 @@ function aiPlaceBarrier() {
   // This means a single barrier directly above a ship (which only blocks the
   // straight 1-step move) is worth less than one that completes an existing
   // pair to fully close a diagonal hop.
-  if (currentPlayer().barriers > 0) {
+  {
     // Target ships going toward OUR starting area — i.e. heading toward the
     // opposite goal from us (they're the ones rushing past us).
     const _myGoalRow = currentPlayer().goalRow ?? AI_WIN_ROW;
     const opponents = ships.filter(s => !currentPlayer().shipIds.has(s.id));
-    // Ships whose goalRow is opposite to ours are the most threatening
     const directThreats = opponents.filter(s =>
       (s.goalRow ?? HUMAN_WIN_ROW) !== _myGoalRow
     );
     const targets = directThreats.length > 0 ? directThreats : opponents;
-    if (targets.length === 0) { currentPlayer().barriers--; return; }
+    if (targets.length === 0) return;
 
-    // Build candidate set: barrier slots adjacent to any target ship's
-    // forward (toward their goal) cells.
     const cands = new Set();
     for (const ship of targets) {
       const r=ship.row, c=ship.col;
       const goingUp = (ship.goalRow ?? HUMAN_WIN_ROW) === HUMAN_WIN_ROW;
       const nr = goingUp ? r-1 : r+1;
       if (nr < 0 || nr >= ROWS) continue;
-      // H slots in the forward direction
       for (const cc of [c-1, c, c+1]) {
         if (cc>=0 && cc<COLS) {
           const minR = Math.min(r, nr), maxR = Math.max(r, nr);
-          // Horizontal barrier between rows minR and maxR at col cc would block
           cands.add(`H:${minR},${cc}`);
         }
       }
-      // V slots beside the ship and in the forward row (close diagonals)
       for (const rr of [r, nr]) {
         for (const cc of [c-1, c]) {
           if (cc>=0 && cc<COLS-1 && rr>=0 && rr<ROWS) cands.add(`V:${rr},${cc}`);
@@ -2927,7 +2921,6 @@ function aiPlaceBarrier() {
     let best = null, bestDelta = 0;
     for (const k of cands) {
       if (barriers.has(k)) continue;
-      // Skip placements that would leave any ship unable to reach its goal.
       if (barrierTrapsAnyone(k)) continue;
       barriers.add(k);
       const delta = forwardBlockScore(targets) - baseline;
@@ -2937,12 +2930,10 @@ function aiPlaceBarrier() {
 
     if (best) {
       barriers.add(best);
-      currentPlayer().barriers--;
     } else {
-      // No useful placement right now — bank the barrier for next turn
-      // instead of wasting it.
       return;
     }
+
   }
 }
 
