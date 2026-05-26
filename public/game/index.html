@@ -5062,13 +5062,24 @@ function sfxTimerTick() {
 // Do not call showMenu() here.
 
 // ================================================================
-//  SECTION 16B — ONLINE MULTIPLAYER
+//  SECTION 16B — ONLINE MULTIPLAYER (Supabase Realtime)
 // ================================================================
 
 let onlineMode        = false;
-let myOnlinePlayerIdx = -1;   // 0 = host (red/Commander), 1 = guest (green/Alien)
-let onlineSocket      = null;
+let myOnlinePlayerIdx = -1;   // 0 = host, 1..N-1 = guests in join order
+let onlineSocket      = null; // shim wrapping the Realtime channel (legacy callsites use .emit/.disconnect)
 let onlineRoomCode    = null;
+
+// Supabase realtime state
+const SB_URL = 'https://hxudjtqjzobbuzdmalig.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4dWRqdHFqem9iYnV6ZG1hbGlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Mjk3OTgsImV4cCI6MjA5NDEwNTc5OH0.Nie975Ue8lfEktUwRVPj7AVW1zZ8DD-BNKXeupPVFCg';
+let _sb               = null;
+let olRoomId          = null;
+let olChannel         = null;
+let olLobbyChannel    = null;
+let olIsHost          = false;
+let olNeededPlayers   = 2;
+let _olHostFillTimer  = null;
 
 // ── Player identity helpers for online games ─────────────────────
 const OL_EMOJIS = ['🔴','🟢','🟠','🔵'];
@@ -5085,225 +5096,327 @@ function olRenameOnlinePlayers() {
   allPlayers.forEach((p, i) => { p.name = OL_NAMES[i] ?? `Player ${i + 1}`; });
 }
 
-function olGetSocket() {
-  if (onlineSocket && onlineSocket.connected) return onlineSocket;
-  onlineSocket = window.io({ path: '/api/socket.io/' });
-  onlineSocket.on('opponent_disconnected', () => {
-    if (phase === 'gameover') return;
-    // Find which player likely disconnected (the one whose turn it currently is,
-    // or any non-local player). Show a helpful message.
-    const absentName = (phase === 'remote_turn' && allPlayers[currentPlayerIdx])
-      ? allPlayers[currentPlayerIdx].name
-      : 'An opponent';
-    showToast(`⚠️ ${absentName} disconnected. Waiting…`);
-    setStatus(`⚠️ ${absentName} disconnected — bot will take over if they don't return.`);
-    updateUI();
-    // HOST: remote watchdog will fire and handle the bot replacement
-  });
-  onlineSocket.on('game_state', (stateJson) => {
-    applyOnlineState(stateJson);
-  });
-  onlineSocket.on('matchmaking_update', ({ size, needed }) => {
-    const waiting = needed - size;
-    const el = document.getElementById('ol-search-msg');
-    if (el) el.textContent =
-      `${size}/${needed} players found — waiting for ${waiting} more…`;
-  });
-  onlineSocket.on('match_found', ({ code, playerIdx, playerCount }) => {
-    myOnlinePlayerIdx = playerIdx;
-    onlineRoomCode    = code;
-    olShowMatchmakingSearching(false);
-    olOnRoomReady({ playerIdx, playerCount });
-  });
-  return onlineSocket;
-}
-
-function olShowMatchmakingSearching(show, n) {
-  const searching = document.getElementById('ol-searching');
-  const qmBtns    = document.querySelectorAll('.ol-qm-btn');
-  const createBtn = document.getElementById('ol-create-btn');
-  const joinBtn   = document.getElementById('ol-join-btn');
-  if (show) {
-    searching.classList.add('show');
-    qmBtns.forEach(b => b.classList.add('searching'));
-    document.getElementById('ol-search-msg').textContent =
-      `Searching for a ${n}-player match…`;
-    createBtn.disabled = true;
-    joinBtn.disabled   = true;
-  } else {
-    searching.classList.remove('show');
-    qmBtns.forEach(b => b.classList.remove('searching'));
-    createBtn.disabled = false;
-    joinBtn.disabled   = false;
-  }
-}
-
-function olJoinMatchmaking(n) {
-  const sock = olGetSocket();
-  olShowMatchmakingSearching(true, n);
-  sock.emit('join_matchmaking', n, (res) => {
-    if (!res.ok) {
-      olShowMatchmakingSearching(false);
-      showToast('⚠️ ' + (res.error || 'Could not find match. Try again.'));
+function _olDisplayName() {
+  try {
+    if (typeof window.__clerkDisplayName === 'function') {
+      const n = window.__clerkDisplayName();
+      if (n) return String(n).slice(0, 24);
     }
-  });
+  } catch(e){}
+  return 'Commander';
 }
 
-function olCancelMatchmaking() {
-  if (onlineSocket) onlineSocket.emit('leave_matchmaking');
-  olShowMatchmakingSearching(false);
+function _olRandomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = ''; for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
 }
 
-// Load socket.io client lazily — avoids blocking page render on load
-function _olLoadSocketIO(cb) {
-  if (window.io) { cb(); return; }
+// Lazy-load supabase-js (UMD)
+function _olLoadSupabase(cb) {
+  if (_sb) { cb(); return; }
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    _sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+    cb(); return;
+  }
   const s = document.createElement('script');
-  s.src = 'https://cdn.socket.io/4.8.3/socket.io.min.js';
-  s.onload  = cb;
-  s.onerror = () => { showToast('⚠️ Network library failed to load. Check connection.'); olBack(); };
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+  s.onload = () => {
+    _sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+    cb();
+  };
+  s.onerror = () => {
+    showToast('⚠️ Network library failed to load. Check connection.');
+    olBack();
+  };
   document.head.appendChild(s);
 }
 
+// Shim: existing game code calls onlineSocket.emit('game_state', ...) / disconnect()
+function _olMakeSocketShim() {
+  onlineSocket = {
+    connected: true,
+    emit(event, payload) {
+      if (event === 'game_state') olBroadcastState('game_state');
+    },
+    disconnect() { try { if (olChannel) olChannel.unsubscribe(); } catch(e){} olChannel = null; onlineSocket = null; },
+  };
+}
+
 function enterOnlineLobby() {
-  // Coin is spent when the match actually starts (see olOnRoomReady), not on entering the lobby
+  // Coin is spent when the match actually starts (see olHostStartGame), not on entering the lobby
   if (Coins.get() <= 0) { showNoCoinModal(); return; }
   hideMenu();
-  document.getElementById('online-lobby').classList.add('show');
-  document.getElementById('ol-code-box').style.display    = 'none';
-  document.getElementById('ol-code-input').value          = '';
-  document.getElementById('ol-join-status').textContent   = '';
-  document.getElementById('ol-join-status').className     = 'ol-status';
-  document.getElementById('ol-searching').classList.remove('show');
-  document.querySelectorAll('.ol-qm-btn').forEach(b => b.classList.remove('searching'));
-  document.getElementById('ol-create-btn').disabled       = true;
-  document.getElementById('ol-join-btn').disabled         = true;
-  // Show spinner while socket.io CDN script loads
+  const lobby = document.getElementById('online-lobby');
+  lobby.classList.add('show');
+  document.getElementById('ol-mycode-box').style.display = 'none';
+  document.getElementById('ol-create-status').textContent = '';
+  document.getElementById('ol-create-status').className = 'ol-status';
+  document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = true);
   document.getElementById('ol-waiting').classList.add('show');
-  document.getElementById('ol-wait-msg').textContent      = 'Loading…';
-  document.getElementById('ol-main').style.display        = 'none';
-  _olLoadSocketIO(() => {
+  document.getElementById('ol-wait-msg').textContent = 'Connecting to lobby…';
+  document.getElementById('ol-main').style.display = 'none';
+  _olLoadSupabase(() => {
     document.getElementById('ol-waiting').classList.remove('show');
-    document.getElementById('ol-main').style.display      = 'flex';
-    document.getElementById('ol-create-btn').disabled     = false;
-    document.getElementById('ol-join-btn').disabled       = false;
+    document.getElementById('ol-main').style.display = 'flex';
+    document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = false);
+    olStartLobbySubscription();
+    olRefreshRoomList();
   });
+}
+
+function olStartLobbySubscription() {
+  if (olLobbyChannel || !_sb) return;
+  olLobbyChannel = _sb.channel('lobby-rooms')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms' }, () => {
+      olRefreshRoomList();
+    })
+    .subscribe();
+}
+
+async function olRefreshRoomList() {
+  if (!_sb) return;
+  // Prune stale waiting rooms older than 30 min
+  try {
+    const cutoff = new Date(Date.now() - 30*60*1000).toISOString();
+    await _sb.from('game_rooms').delete().eq('status','waiting').lt('created_at', cutoff);
+  } catch(e){}
+  const { data, error } = await _sb.from('game_rooms')
+    .select('id, code, host_name, needed_players, joined_players, status, created_at')
+    .eq('status','waiting').order('created_at', { ascending: false }).limit(50);
+  const list = document.getElementById('ol-room-list');
+  if (!list) return;
+  if (error || !data) { list.innerHTML = '<div class="ol-empty">Could not load rooms.</div>'; return; }
+  const open = data.filter(r => r.joined_players < r.needed_players);
+  if (open.length === 0) {
+    list.innerHTML = '<div class="ol-empty">No open games yet. Create one above!</div>';
+    return;
+  }
+  list.innerHTML = open.map(r => {
+    const full   = r.joined_players >= r.needed_players;
+    const isMine = r.id === olRoomId;
+    const host   = (r.host_name || 'Commander').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+    return `<div class="ol-room-row">
+      <div class="ol-room-info">
+        <div class="ol-room-code-tag">${r.code}</div>
+        <div class="ol-room-host">👤 ${host}</div>
+      </div>
+      <div class="ol-room-meta">${r.joined_players}/${r.needed_players}</div>
+      <button class="ol-room-join" ${full||isMine?'disabled':''} onclick="olJoinRoomById('${r.id}','${r.code}')">
+        ${isMine ? 'YOURS' : (full ? 'FULL' : 'JOIN')}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function olCreateRoom(needed) {
+  if (!_sb) return;
+  if (olRoomId) { showToast('⚠️ You already have a room open.'); return; }
+  needed = Math.max(2, Math.min(4, needed|0 || 2));
+  document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = true);
+  const status = document.getElementById('ol-create-status');
+  status.textContent = 'Creating room…'; status.className = 'ol-status';
+  // Try a few times in case of code collision
+  let row = null, lastErr = null;
+  for (let i = 0; i < 4 && !row; i++) {
+    const code = _olRandomCode();
+    const { data, error } = await _sb.from('game_rooms').insert({
+      code, host_name: _olDisplayName(),
+      needed_players: needed, joined_players: 1, status: 'waiting',
+    }).select().single();
+    if (!error) { row = data; break; }
+    lastErr = error;
+  }
+  if (!row) {
+    status.textContent = 'Could not create room. Try again.';
+    status.className = 'ol-status err';
+    document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = false);
+    return;
+  }
+  olRoomId       = row.id;
+  onlineRoomCode = row.code;
+  olIsHost       = true;
+  olNeededPlayers = needed;
+  myOnlinePlayerIdx = 0;
+  status.textContent = '';
+  document.getElementById('ol-mycode-val').textContent = row.code;
+  document.getElementById('ol-mycode-hint').textContent = `Waiting for players… 1/${needed}`;
+  document.getElementById('ol-mycode-box').style.display = 'block';
+  olOpenRoomChannel(row.code);
+  olHostWatchRoomFill();
+}
+
+async function olJoinRoomById(roomId, code) {
+  if (!_sb || olRoomId) return;
+  // Atomic-ish seat reservation: optimistic update guarded by joined_players value
+  const { data: row, error: ferr } = await _sb.from('game_rooms')
+    .select('id, code, needed_players, joined_players, status')
+    .eq('id', roomId).single();
+  if (ferr || !row) { showToast('⚠️ Room no longer available.'); olRefreshRoomList(); return; }
+  if (row.status !== 'waiting' || row.joined_players >= row.needed_players) {
+    showToast('⚠️ Room is full or already started.'); olRefreshRoomList(); return;
+  }
+  const myIdx    = row.joined_players;          // 1..N-1
+  const newCount = row.joined_players + 1;
+  const updates  = { joined_players: newCount };
+  if (newCount >= row.needed_players) updates.status = 'playing';
+  const { data: upd, error: uerr } = await _sb.from('game_rooms')
+    .update(updates).eq('id', roomId).eq('joined_players', row.joined_players)
+    .select();
+  if (uerr || !upd || upd.length === 0) {
+    showToast('⚠️ Someone else grabbed that seat. Try another room.');
+    olRefreshRoomList(); return;
+  }
+  olRoomId          = roomId;
+  onlineRoomCode    = code;
+  olIsHost          = false;
+  olNeededPlayers   = row.needed_players;
+  myOnlinePlayerIdx = myIdx;
+  document.getElementById('ol-create-status').textContent = `✅ Joined ${code} — waiting for host to start…`;
+  document.getElementById('ol-create-status').className = 'ol-status ok';
+  document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = true);
+  olOpenRoomChannel(code);
 }
 
 function olCopyCode() {
   if (!onlineRoomCode) return;
   navigator.clipboard?.writeText(onlineRoomCode).then(() => {
-    const el = document.getElementById('ol-code-hint');
+    const el = document.getElementById('ol-mycode-hint');
+    if (!el) return;
     const prev = el.textContent;
     el.textContent = '✅ Code copied!';
-    setTimeout(() => { el.textContent = prev; }, 1800);
-  }).catch(() => {});
+    setTimeout(() => { el.textContent = prev; }, 1500);
+  }).catch(()=>{});
 }
 
-function olBack() {
-  document.getElementById('online-lobby').classList.remove('show');
-  stopTurnTimer();
-  stopRemoteWatchdog();
-  if (onlineSocket) {
-    onlineSocket.emit('leave_matchmaking');
-    onlineSocket.disconnect();
-    onlineSocket = null;
+async function olCancelCreatedRoom() {
+  if (olRoomId && olIsHost) {
+    try { await _sb.from('game_rooms').delete().eq('id', olRoomId); } catch(e){}
+    if (olChannel) { try { olChannel.send({ type:'broadcast', event:'host_left', payload:{} }); } catch(e){} }
   }
-  onlineMode = false; myOnlinePlayerIdx = -1; onlineRoomCode = null;
+  _olCleanupChannel();
+  olRoomId = null; onlineRoomCode = null; olIsHost = false; myOnlinePlayerIdx = -1;
+  document.getElementById('ol-mycode-box').style.display = 'none';
+  document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = false);
+  document.getElementById('ol-create-status').textContent = 'Room cancelled.';
+  document.getElementById('ol-create-status').className = 'ol-status';
+  olRefreshRoomList();
+}
+
+function olOpenRoomChannel(code) {
+  if (olChannel) { try { olChannel.unsubscribe(); } catch(e){} olChannel = null; }
+  olChannel = _sb.channel('room:' + code, { config: { broadcast: { self: false } } });
+  olChannel.on('broadcast', { event: 'game_state' }, (msg) => {
+    if (msg?.payload?.state) applyOnlineState(msg.payload.state);
+  });
+  olChannel.on('broadcast', { event: 'start' }, (msg) => {
+    if (msg?.payload?.state) {
+      stopMenuMusic();
+      document.getElementById('online-lobby').classList.remove('show');
+      try { Coins.trySpend(); } catch(e){}
+      applyOnlineState(msg.payload.state);
+      showToast(olPlayerToast(myOnlinePlayerIdx, olNeededPlayers, false));
+    }
+  });
+  olChannel.on('broadcast', { event: 'host_left' }, () => {
+    if (!onlineMode) { showToast('⚠️ Host cancelled the room.'); olCancelCreatedRoom(); }
+  });
+  olChannel.subscribe();
+  _olMakeSocketShim();
+}
+
+function _olCleanupChannel() {
+  if (_olHostFillTimer) { clearInterval(_olHostFillTimer); _olHostFillTimer = null; }
+  if (olChannel) { try { olChannel.unsubscribe(); } catch(e){} olChannel = null; }
+  onlineSocket = null;
+}
+
+async function olHostWatchRoomFill() {
+  if (_olHostFillTimer) clearInterval(_olHostFillTimer);
+  _olHostFillTimer = setInterval(async () => {
+    if (!olRoomId || !olIsHost || onlineMode) {
+      clearInterval(_olHostFillTimer); _olHostFillTimer = null; return;
+    }
+    const { data } = await _sb.from('game_rooms')
+      .select('joined_players, needed_players, status').eq('id', olRoomId).single();
+    if (!data) return;
+    const hint = document.getElementById('ol-mycode-hint');
+    if (hint) hint.textContent = `Waiting for players… ${data.joined_players}/${data.needed_players}`;
+    if (data.joined_players >= data.needed_players) {
+      clearInterval(_olHostFillTimer); _olHostFillTimer = null;
+      olHostStartGame(data.needed_players);
+    }
+  }, 1500);
+}
+
+function olHostStartGame(needed) {
+  const numH = needed === 2 ? 1 : 2;
+  const numA = needed - numH;
+  stopMenuMusic();
+  document.getElementById('online-lobby').classList.remove('show');
+  onlineMode = true;
+  try { Coins.trySpend(); } catch(e){}
+  gameConfig = { numHumans: numH, numAIs: numA };
+  initGame();
+  allPlayers.forEach(p => { p.isAi = false; });
+  olRenameOnlinePlayers();
+  buildInfoBar();
+  // Broadcast initial state to guests so they enter the game
+  olBroadcastState('start');
+  showToast(olPlayerToast(0, needed, true));
+  setStatus('Your turn! Move or fire your ships.');
+  notifyMyTurnStart();
+}
+
+// Replaces onlineSocket.emit('game_state', ...) in legacy callsites
+function olBroadcastState(event) {
+  if (!olChannel) return;
+  try {
+    olChannel.send({
+      type: 'broadcast',
+      event: event || 'game_state',
+      payload: { state: serializeOnlineState() },
+    });
+  } catch(e){}
+}
+
+async function olBack() {
+  stopTurnTimer(); stopRemoteWatchdog();
+  // Clean up created/joined room state in DB
+  if (olRoomId) {
+    if (olIsHost) {
+      try { await _sb.from('game_rooms').delete().eq('id', olRoomId); } catch(e){}
+      if (olChannel) { try { olChannel.send({ type:'broadcast', event:'host_left', payload:{} }); } catch(e){} }
+    } else if (!onlineMode) {
+      // Joined but game hasn't started — release the seat
+      try {
+        const { data } = await _sb.from('game_rooms')
+          .select('joined_players, status').eq('id', olRoomId).single();
+        if (data && data.status === 'waiting' && data.joined_players > 0) {
+          await _sb.from('game_rooms').update({ joined_players: data.joined_players - 1 }).eq('id', olRoomId);
+        }
+      } catch(e){}
+    }
+  }
+  if (olLobbyChannel) { try { olLobbyChannel.unsubscribe(); } catch(e){} olLobbyChannel = null; }
+  _olCleanupChannel();
+  olRoomId = null; onlineRoomCode = null; olIsHost = false; olNeededPlayers = 2;
+  onlineMode = false; myOnlinePlayerIdx = -1;
+  document.getElementById('online-lobby').classList.remove('show');
+  document.getElementById('ol-mycode-box').style.display = 'none';
+  document.querySelectorAll('.ol-pcount-btn').forEach(b => b.disabled = false);
   showMenu();
 }
 
-function olCreateRoom() {
-  const sock = olGetSocket();
-  document.getElementById('ol-create-btn').disabled = true;
-  sock.emit('create_room', (res) => {
-    if (!res.ok) {
-      showToast('⚠️ Could not create room. Try again.');
-      document.getElementById('ol-create-btn').disabled = false;
-      return;
+// On unload, try to release the seat or delete the host room
+window.addEventListener('beforeunload', () => {
+  if (!_sb || !olRoomId) return;
+  try {
+    if (olIsHost) {
+      _sb.from('game_rooms').delete().eq('id', olRoomId).then(()=>{});
     }
-    myOnlinePlayerIdx = 0;
-    onlineRoomCode    = res.code;
-    document.getElementById('ol-code-value').textContent = res.code;
-    document.getElementById('ol-code-box').style.display = 'block';
-    document.getElementById('ol-code-hint').textContent  = 'Waiting for opponent to join…';
-    sock.once('room_ready', olOnRoomReady);
-  });
-}
-
-function olJoinRoom() {
-  const code = (document.getElementById('ol-code-input').value || '').trim().toUpperCase();
-  if (code.length < 6) {
-    const el = document.getElementById('ol-join-status');
-    el.textContent = 'Enter the full 6-character code.';
-    el.className   = 'ol-status err';
-    return;
-  }
-  const sock = olGetSocket();
-  document.getElementById('ol-join-btn').disabled = true;
-  sock.emit('join_room', code, (res) => {
-    const el = document.getElementById('ol-join-status');
-    if (!res.ok) {
-      el.textContent = res.error || 'Could not join room.';
-      el.className   = 'ol-status err';
-      document.getElementById('ol-join-btn').disabled = false;
-      return;
-    }
-    myOnlinePlayerIdx = 1;
-    onlineRoomCode    = res.code;
-    el.textContent    = '✅ Joined! Starting game…';
-    el.className      = 'ol-status ok';
-    // Call directly — server emits room_ready to the whole room immediately
-    // after the ack, so we skip the listener to avoid any race condition.
-    olOnRoomReady();
-  });
-}
-
-// data: { playerIdx?, playerCount? }
-// Called from:
-//   room_ready event  → data = { playerCount:2 }, myOnlinePlayerIdx already set
-//   guest join_room   → data = undefined, myOnlinePlayerIdx already set to 1
-//   match_found       → data = { playerIdx:N, playerCount:N }
-function olOnRoomReady(data) {
-  const playerCount = (data && data.playerCount) || 2;
-  // For matchmaking, playerIdx comes in data; for room-code flow it's already set
-  if (data && data.playerIdx !== undefined) myOnlinePlayerIdx = data.playerIdx;
-
-  // Compute game config: team-based layout
-  // 2p → 1H 1A, 3p → 2H 1A, 4p → 2H 2A
-  const numH = playerCount === 2 ? 1 : 2;
-  const numA = playerCount - numH;
-
-  document.getElementById('ol-waiting').classList.add('show');
-  document.getElementById('ol-main').style.display = 'none';
-  document.getElementById('ol-wait-msg').textContent =
-    myOnlinePlayerIdx === 0 ? 'Match found! Starting…' : 'Joining game…';
-
-  setTimeout(() => {
-    stopMenuMusic();
-    document.getElementById('online-lobby').classList.remove('show');
-    onlineMode = true;
-    // Spend coin only now that the match is actually starting
-    try { Coins.trySpend(); } catch(e){}
-
-    if (myOnlinePlayerIdx === 0) {
-      // Host: start the game engine and broadcast initial state
-      gameConfig = { numHumans: numH, numAIs: numA };
-      initGame();
-      // All online players are human — disable AI for every slot
-      allPlayers.forEach(p => { p.isAi = false; });
-      olRenameOnlinePlayers();
-      buildInfoBar();
-      onlineSocket.emit('game_state', serializeOnlineState());
-      showToast(olPlayerToast(0, playerCount, true));
-      setStatus('Your turn! Move or fire your ships.');
-      notifyMyTurnStart();
-    } else {
-      // Guest: wait for initial state from host
-      showToast(olPlayerToast(myOnlinePlayerIdx, playerCount, false));
-      setStatus('Waiting for host to start the game…');
-    }
-  }, 700);
-}
+  } catch(e){}
+});
 
 function serializeOnlineState() {
   return JSON.stringify({
@@ -5360,9 +5473,6 @@ function applyOnlineState(json) {
   buildInfoBar();
 
   if (phase === 'gameover') {
-    // Determine if local player won.
-    // For 2-player: winner is 'human'|'ai', myOnlinePlayerIdx 0→human, 1→ai
-    // For 3-4 player (team): even playerIdx = human team, odd = ai team
     const myTeam  = (myOnlinePlayerIdx % 2 === 0) ? 'human' : 'ai';
     const isWinner = (winner === myTeam);
     const c    = countIslands();
@@ -5371,33 +5481,30 @@ function applyOnlineState(json) {
     const msg  = isWinner
       ? `🎉 You Win!\nReached the far galaxy\nwith ${myC} vs ${thC} planets!`
       : `💀 You Lost!\nOpponent dominated\nwith ${thC} vs ${myC} planets!`;
-    // Only show & record if not already shown (guard against duplicate broadcasts)
     const goEl = document.getElementById('go');
     if (!goEl.classList.contains('show')) {
       if (isWinner) sfxWin(); else sfxLose();
       document.getElementById('go-msg').textContent = msg;
       goEl.classList.add('show');
-      // Record stats for non-HOST online players here (HOST records in showGameOver)
       if (myOnlinePlayerIdx !== 0 && typeof window.__postGameResult === 'function') {
         const myPlayer = allPlayers[myOnlinePlayerIdx];
         const dur = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
         window.__postGameResult(
           isWinner ? 'win' : 'loss',
           myPlayer?.turnsPlayed ?? 0,
-          c.human, c.ai, dur,
-          true  // isOnline
+          c.human, c.ai, dur, true
         );
       }
+      // Mark room finished so it disappears from the lobby
+      if (olRoomId && _sb) { try { _sb.from('game_rooms').update({ status: 'finished' }).eq('id', olRoomId).then(()=>{}); } catch(e){} }
       updateUI(); render();
     }
     return;
   }
 
-  // Stop any running remote watchdog — a real state arrived
   stopRemoteWatchdog();
 
-  // HOST: check if any player has enough consecutive misses to be replaced by a bot
-  // (this handles the case where a connected player let their own timer expire repeatedly)
+  // HOST: replace afk players with bots if they've missed too many turns
   if (myOnlinePlayerIdx === 0) {
     let botAssigned = false;
     allPlayers.forEach(p => {
@@ -5407,11 +5514,10 @@ function applyOnlineState(json) {
         showToast(`🤖 ${p.name} replaced by a bot (missed ${MAX_MISSED_TURNS} turns in a row)`);
       }
     });
-    if (botAssigned) onlineSocket?.emit('game_state', serializeOnlineState());
+    if (botAssigned) olBroadcastState('game_state');
   }
 
   if (currentPlayerIdx !== myOnlinePlayerIdx) {
-    // HOST: if the new active player is a bot-replaced AI, run AI instead of waiting
     if (myOnlinePlayerIdx === 0 && currentPlayer().isAi) {
       phase = 'ai_turn';
       stopTurnTimer();
@@ -5432,6 +5538,7 @@ function applyOnlineState(json) {
   }
   updateUI(); render();
 }
+
 
 // ================================================================
 //  SECTION 16 — PWA: service-worker registration
