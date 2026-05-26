@@ -1590,37 +1590,27 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
     <div id="ol-main" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;">
       <div class="ol-section">
-        <div class="ol-label">⚡ Quick Match — find random opponents</div>
-        <div class="ol-qm-btns">
-          <button class="ol-qm-btn" id="ol-qm-2" onclick="olJoinMatchmaking(2)">2<br><span>PLAYERS</span></button>
-          <button class="ol-qm-btn" id="ol-qm-3" onclick="olJoinMatchmaking(3)">3<br><span>PLAYERS</span></button>
-          <button class="ol-qm-btn" id="ol-qm-4" onclick="olJoinMatchmaking(4)">4<br><span>PLAYERS</span></button>
+        <div class="ol-label">⚔ Create a New Game</div>
+        <div class="ol-create-row">
+          <button class="ol-pcount-btn" onclick="olCreateRoom(2)">2P</button>
+          <button class="ol-pcount-btn" onclick="olCreateRoom(3)">3P</button>
+          <button class="ol-pcount-btn" onclick="olCreateRoom(4)">4P</button>
         </div>
-        <div id="ol-searching">
-          <div class="ol-spinner"></div>
-          <div id="ol-search-msg">Searching…</div>
-          <button id="ol-cancel-btn" onclick="olCancelMatchmaking()">✖ Cancel</button>
-        </div>
-      </div>
-      <div class="ol-divider">— OR USE A ROOM CODE —</div>
-      <div class="ol-section">
-        <div class="ol-label">Create a private 2-player game</div>
-        <button id="ol-create-btn" onclick="olCreateRoom()">⚔ Create Game</button>
-        <div id="ol-code-box" style="display:none">
-          <div class="ol-label" style="margin-bottom:4px">Share this code with your opponent</div>
-          <div id="ol-code-value" onclick="olCopyCode()" title="Tap to copy">------</div>
-          <div class="ol-label" style="font-size:8px;margin-top:2px;cursor:pointer;" onclick="olCopyCode()">📋 Tap code to copy</div>
-          <div id="ol-code-hint" class="ol-status">Waiting for opponent to join…</div>
+        <div id="ol-create-status" class="ol-status"></div>
+        <div id="ol-mycode-box" style="display:none;">
+          <div class="ol-label">Your room code · share it</div>
+          <div id="ol-mycode-val" onclick="olCopyCode()" title="Tap to copy">------</div>
+          <div id="ol-mycode-hint">Waiting for players… 1/2</div>
+          <button id="ol-cancel-create" onclick="olCancelCreatedRoom()">✖ Cancel Room</button>
         </div>
       </div>
-      <div class="ol-divider">— OR JOIN A GAME —</div>
+      <div class="ol-divider">— OPEN GAMES —</div>
       <div class="ol-section">
-        <div class="ol-label">Enter room code</div>
-        <input id="ol-code-input" type="text" maxlength="6" placeholder="ABC123"
-               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
-               onkeydown="if(event.key==='Enter') olJoinRoom()">
-        <button id="ol-join-btn" onclick="olJoinRoom()">🚀 Join Game</button>
-        <div id="ol-join-status" class="ol-status"></div>
+        <div class="ol-label">Tap to join · live list</div>
+        <div id="ol-room-list" class="ol-room-list">
+          <div class="ol-empty">Loading rooms…</div>
+        </div>
+        <button id="ol-refresh-btn" onclick="olRefreshRoomList()">⟳ Refresh</button>
       </div>
     </div>
 
