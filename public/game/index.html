@@ -1818,12 +1818,12 @@ function setupGamePlayers(numHumans, numAIs) {
   const humans = [], ais = [];
   for (let i = 0; i < numHumans; i++) {
     humans.push({ name: numHumans === 1 ? 'Commander' : `Player ${i+1}`,
-      isAi: false, barriers: 1, turnsPlayed: 0, consecutiveMisses: 0, shipIds: new Set([`h${i}s`, `h${i}d`]) });
+      isAi: false, barriers: 0, turnsPlayed: 0, consecutiveMisses: 0, shipIds: new Set([`h${i}s`, `h${i}d`]) });
   }
   const aiStrategies = ['balanced', 'rusher', 'territorial'];
   for (let i = 0; i < numAIs; i++) {
     ais.push({ name: numAIs === 1 ? 'Alien' : `Alien ${i+1}`,
-      isAi: true,  barriers: 1, turnsPlayed: 0, consecutiveMisses: 0,
+      isAi: true,  barriers: 0, turnsPlayed: 0, consecutiveMisses: 0,
       strategy: aiStrategies[i] ?? 'balanced',
       shipIds: new Set([`a${i}s`, `a${i}d`]) });
   }
@@ -1862,7 +1862,8 @@ function buildInfoBar() {
       <div class="pinfo">
         <span class="pname" ${nameId} style="color:${p.palette.light}">${p.name}</span>
         <div class="pstats">
-          <span class="stat-pill" style="color:${p.palette.light}"><span class="ic">🪐</span><span id="stat-p${i}-islands">0</span></span>
+          <span class="stat-pill" style="color:${p.palette.light}" title="Planets captured"><span class="ic">🪐</span><span id="stat-p${i}-islands">0</span></span>
+          <span class="stat-pill" style="color:${p.palette.light}" title="Barriers available"><span class="ic">🧱</span><span id="stat-p${i}-barriers">0</span></span>
         </div>
 
       </div>`;
@@ -2525,9 +2526,13 @@ function onShoot() {
 
 function onBarrier() {
   if (phase !== 'action') return;
-  // Unlimited barriers — no per-turn cap, no stored-count requirement
+  const cp = currentPlayer();
+  if (!cp || (cp.barriers ?? 0) <= 0) {
+    setStatus('🧱 No barriers available. Earn 1 every 2 turns (starting from turn 2).');
+    return;
+  }
   phase = 'place_barrier'; barrierOwner = 'human';
-  setStatus('Click near the edge between two cells to place a barrier wall. Cancel to skip.');
+  setStatus(`Click near the edge between two cells to place a barrier wall (${cp.barriers} left). Cancel to skip.`);
   updateUI(); render();
 }
 
@@ -2702,11 +2707,13 @@ function handleBarrierClick(bx, by) {
 
   barriers.add(key);
   sfxBarrier();
-  // Barriers are unlimited — do not decrement a counter
+  // Decrement barrier inventory for the current (human) player
+  const _bp = currentPlayer();
+  if (_bp) _bp.barriers = Math.max(0, (_bp.barriers ?? 0) - 1);
   humanPlacedBarrierThisTurn = true;
   lastHumanBarrier = key;          // remember it so the player can undo
   phase = 'action';
-  setStatus(`Barrier wall placed — you can Undo if it was a mistake, or place another after End Turn.`);
+  setStatus(`Barrier wall placed (${_bp ? _bp.barriers : 0} left). Undo if a mistake, or End Turn to continue.`);
   updateUI(); render();
 
 }
@@ -2715,10 +2722,12 @@ function onUndoBarrier() {
   if (!lastHumanBarrier || phase !== 'action') return;
   if (!barriers.has(lastHumanBarrier)) { lastHumanBarrier = null; updateUI(); return; }
   barriers.delete(lastHumanBarrier);
-  // (no counter to refund — barriers are unlimited)
+  // Refund the barrier to the current player's inventory
+  const _ub = currentPlayer();
+  if (_ub) _ub.barriers = (_ub.barriers ?? 0) + 1;
   humanPlacedBarrierThisTurn = false;
   lastHumanBarrier = null;
-  setStatus('Barrier removed. You can place it again.');
+  setStatus(`Barrier removed (${_ub ? _ub.barriers : 0} available).`);
   updateUI(); render();
 }
 
@@ -3049,6 +3058,8 @@ function aiPlaceBarrier() {
 
     if (best) {
       barriers.add(best);
+      const _ap = currentPlayer();
+      if (_ap) _ap.barriers = Math.max(0, (_ap.barriers ?? 0) - 1);
     } else {
       return;
     }
@@ -5284,14 +5295,30 @@ function closeStats() {
 }
 // In-game "Menu" button: confirm and return to main menu
 function onIngameMenu() {
-  const go = document.getElementById('go');
-  const gameOver = go && go.classList.contains('show');
-  if (gameOver || confirm('Return to the main menu? Your current game will be lost.')) {
-    if (onlineMode && onlineSocket) { onlineSocket.disconnect(); onlineSocket = null; }
+  try {
+    const go = document.getElementById('go');
+    const vo = document.getElementById('victory-ov');
+    const gameOver = (go && go.classList.contains('show')) || (vo && vo.classList.contains('show')) || phase === 'gameover';
+    let ok = gameOver;
+    if (!ok) {
+      try { ok = window.confirm('Return to the main menu? Your current game will be lost.'); }
+      catch(e) { ok = true; }
+    }
+    if (!ok) return;
+    // Reset transient game state so leaving mid-action doesn't break the menu
+    try { phase = 'action'; movingShipId = null; shootingShipId = null;
+      validMoveCells = []; validShotRays = []; barrierOwner = null; } catch(e){}
+    if (vo) vo.classList.remove('show');
+    if (go) go.classList.remove('show');
+    try { if (onlineMode && onlineSocket) { onlineSocket.disconnect(); onlineSocket = null; } } catch(e){}
     onlineMode = false; myOnlinePlayerIdx = -1; onlineRoomCode = null;
-    stopTurnTimer(); stopRemoteWatchdog();
+    try { stopTurnTimer(); } catch(e){}
+    try { stopRemoteWatchdog(); } catch(e){}
     showMenu();
-    setTimeout(startMenuMusic, 200);
+    setTimeout(() => { try { startMenuMusic(); } catch(e){} }, 200);
+  } catch (err) {
+    console.warn('onIngameMenu error', err);
+    try { showMenu(); } catch(e){}
   }
 }
 
