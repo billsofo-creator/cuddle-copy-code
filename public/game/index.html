@@ -2706,11 +2706,13 @@ function handleBarrierClick(bx, by) {
 
   barriers.add(key);
   sfxBarrier();
-  // Barriers are unlimited — do not decrement a counter
+  // Decrement barrier inventory for the current (human) player
+  const _bp = currentPlayer();
+  if (_bp) _bp.barriers = Math.max(0, (_bp.barriers ?? 0) - 1);
   humanPlacedBarrierThisTurn = true;
   lastHumanBarrier = key;          // remember it so the player can undo
   phase = 'action';
-  setStatus(`Barrier wall placed — you can Undo if it was a mistake, or place another after End Turn.`);
+  setStatus(`Barrier wall placed (${_bp ? _bp.barriers : 0} left). Undo if a mistake, or End Turn to continue.`);
   updateUI(); render();
 
 }
