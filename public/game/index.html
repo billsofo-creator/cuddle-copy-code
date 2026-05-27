@@ -4798,22 +4798,22 @@ const AdvTutorial = (function(){
 
     {
       id: 'wrap',
-      title: '🔄 Κανόνας #5 — Στην άκρη; Επιστροφή στην αρχή',
-      body: 'Αν χτυπηθεί σκάφος στην <b>άκρη του board</b> και πρέπει να σπρωχτεί προς τα έξω, <b>επιστρέφει στην πλευρά εκκίνησής του</b>!',
+      title: '🔄 Κανόνας #5 — Πλαϊνή άκρη; Επιστροφή στην αρχή',
+      body: 'Wrap ισχύει <b>μόνο στις πλαϊνές άκρες</b> (αριστερά/δεξιά). Αν σπρωχτεί σκάφος έξω από το πλάι, <b>επιστρέφει στη θέση εκκίνησής του</b>.<br><span style="color:#90A4AE;font-size:11px;">(Στις πάνω/κάτω άκρες δεν γίνεται wrap — μπροστά = νίκη, πίσω = ήδη η αρχή.)</span>',
       mode: 'auto',
       setup: () => ({
         cells: blank(),
-        // red ship in row 2 fires DOWN at green ship sitting on bottom edge (row 4).
-        // Green started from top, so wrap takes it back to row 0.
-        ships: [ {id:'r1', r:2, c:3, o:'r'}, {id:'g1', r:4, c:3, o:'g'} ],
+        // Red fires RIGHT (→) at green sitting on the right side edge.
+        // Green is pushed off the right side → wraps back to its start (col 0).
+        ships: [ {id:'r1', r:2, c:1, o:'r'}, {id:'g1', r:2, c:5, o:'g'} ],
         decor: [],
       }),
       play: async () => {
         await flashShip('r1');
-        await fireBullet(2,3, 1,0, (r,c) => occupiedShip(r,c)==='g1');
-        // Wrap green back to its starting side (top row)
-        await wrapShip('g1', 0, 3);
-        toast('🌀 Επέστρεψε στην αρχή του (επάνω πλευρά).');
+        await fireBullet(2,1, 0,1, (r,c) => occupiedShip(r,c)==='g1');
+        // Wrap green back to its starting side (left edge, col 0)
+        await wrapShip('g1', 2, 0);
+        toast('🌀 Σπρώχτηκε εκτός πλάγια → επέστρεψε στην αρχή.');
         markDone();
       },
     },
