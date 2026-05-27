@@ -4619,8 +4619,15 @@ function startGameWithConfig(numHumans, numAIs) {
   }
   document.getElementById('config-modal').classList.remove('show');
   stopMenuMusic();
-  gameConfig = { numHumans, numAIs };
+  gameConfig = { numHumans, numAIs, difficulty: window.__aiDifficulty || 'normal' };
   initGame();
+}
+window.__aiDifficulty = window.__aiDifficulty || 'normal';
+function setAiDifficulty(d) {
+  window.__aiDifficulty = d;
+  document.querySelectorAll('#cfg-difficulty .cfg-diff').forEach(b => {
+    b.classList.toggle('active', b.dataset.diff === d);
+  });
 }
 
 // ================================================================
