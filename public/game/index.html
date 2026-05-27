@@ -355,9 +355,11 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
   animation: menuFade 0.5s ease-out;
 }
 #main-menu.show { display: flex; }
-#menu-tutorial-chip, #menu-ships-chip { display: none; }
+#menu-tutorial-chip, #menu-tutorial-chip-adv, #menu-ships-chip { display: none; }
 #main-menu.show ~ #menu-tutorial-chip,
 body:has(#main-menu.show) #menu-tutorial-chip,
+#main-menu.show ~ #menu-tutorial-chip-adv,
+body:has(#main-menu.show) #menu-tutorial-chip-adv,
 #main-menu.show ~ #menu-ships-chip,
 body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 @keyframes menuFade { from { opacity: 0; } to { opacity: 1; } }
