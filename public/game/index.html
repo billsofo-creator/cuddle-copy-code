@@ -5295,14 +5295,30 @@ function closeStats() {
 }
 // In-game "Menu" button: confirm and return to main menu
 function onIngameMenu() {
-  const go = document.getElementById('go');
-  const gameOver = go && go.classList.contains('show');
-  if (gameOver || confirm('Return to the main menu? Your current game will be lost.')) {
-    if (onlineMode && onlineSocket) { onlineSocket.disconnect(); onlineSocket = null; }
+  try {
+    const go = document.getElementById('go');
+    const vo = document.getElementById('victory-ov');
+    const gameOver = (go && go.classList.contains('show')) || (vo && vo.classList.contains('show')) || phase === 'gameover';
+    let ok = gameOver;
+    if (!ok) {
+      try { ok = window.confirm('Return to the main menu? Your current game will be lost.'); }
+      catch(e) { ok = true; }
+    }
+    if (!ok) return;
+    // Reset transient game state so leaving mid-action doesn't break the menu
+    try { phase = 'action'; movingShipId = null; shootingShipId = null;
+      validMoveCells = []; validShotRays = []; barrierOwner = null; } catch(e){}
+    if (vo) vo.classList.remove('show');
+    if (go) go.classList.remove('show');
+    try { if (onlineMode && onlineSocket) { onlineSocket.disconnect(); onlineSocket = null; } } catch(e){}
     onlineMode = false; myOnlinePlayerIdx = -1; onlineRoomCode = null;
-    stopTurnTimer(); stopRemoteWatchdog();
+    try { stopTurnTimer(); } catch(e){}
+    try { stopRemoteWatchdog(); } catch(e){}
     showMenu();
-    setTimeout(startMenuMusic, 200);
+    setTimeout(() => { try { startMenuMusic(); } catch(e){} }, 200);
+  } catch (err) {
+    console.warn('onIngameMenu error', err);
+    try { showMenu(); } catch(e){}
   }
 }
 
