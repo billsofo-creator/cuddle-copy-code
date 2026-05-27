@@ -792,6 +792,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   transition: border-color .15s, color .15s;
 }
 .cfg-cancel:hover { border-color: rgba(255,255,255,0.35); color: #CFD8DC; }
+.cfg-diff {
+  flex: 1 1 0; min-width: 84px; padding: 8px 6px; border-radius: 11px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+  color: #E8EAF6; font-family: inherit; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  transition: all .15s;
+}
+.cfg-diff:hover { border-color: rgba(179,157,219,0.7); }
+.cfg-diff.active {
+  background: linear-gradient(160deg, rgba(126,87,194,0.45) 0%, rgba(69,39,160,0.55) 100%);
+  border-color: #B39DDB; box-shadow: 0 0 14px rgba(126,87,194,0.55);
+}
 
 /* ── Stats overlay ─────────────────────────────────── */
 #stats-overlay {
@@ -1545,6 +1557,20 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
         <div class="cfg-desc">1 Commander vs 3 Aliens<br>8 πλοία · εσύ vs όλοι (all-vs-all)</div>
       </button>
     </div>
+
+    <div class="config-sub" style="margin-top:6px;">🧠 AI Difficulty</div>
+    <div id="cfg-difficulty" style="display:flex;gap:8px;width:100%;justify-content:center;flex-wrap:wrap;">
+      <button type="button" class="cfg-diff active" data-diff="normal" onclick="setAiDifficulty('normal')">
+        <div style="font-size:18px;">🙂</div><div style="font-weight:800;font-size:12px;">Normal</div><div style="font-size:9px;opacity:.7;">Balanced</div>
+      </button>
+      <button type="button" class="cfg-diff" data-diff="hard" onclick="setAiDifficulty('hard')">
+        <div style="font-size:18px;">😈</div><div style="font-weight:800;font-size:12px;">Hard</div><div style="font-size:9px;opacity:.7;">Aggressive</div>
+      </button>
+      <button type="button" class="cfg-diff" data-diff="elite" onclick="setAiDifficulty('elite')">
+        <div style="font-size:18px;">👹</div><div style="font-weight:800;font-size:12px;">Elite</div><div style="font-size:9px;opacity:.7;">Tactical genius</div>
+      </button>
+    </div>
+
     <button class="cfg-cancel" onclick="hideConfigModal()">✖ Cancel</button>
   </div>
   </div>
@@ -1820,11 +1846,15 @@ function setupGamePlayers(numHumans, numAIs) {
     humans.push({ name: numHumans === 1 ? 'Commander' : `Player ${i+1}`,
       isAi: false, barriers: 0, turnsPlayed: 0, consecutiveMisses: 0, shipIds: new Set([`h${i}s`, `h${i}d`]) });
   }
-  const aiStrategies = ['balanced', 'rusher', 'territorial'];
+  const diff = (gameConfig && gameConfig.difficulty) || 'normal';
+  const aiStrategiesNormal = ['balanced', 'rusher', 'territorial'];
+  const aiStrategiesHard   = ['hard', 'hard', 'hard'];
+  const aiStrategiesElite  = ['elite', 'elite', 'elite'];
+  const aiStrategies = diff === 'elite' ? aiStrategiesElite : diff === 'hard' ? aiStrategiesHard : aiStrategiesNormal;
   for (let i = 0; i < numAIs; i++) {
-    ais.push({ name: numAIs === 1 ? 'Alien' : `Alien ${i+1}`,
+    ais.push({ name: numAIs === 1 ? (diff==='elite'?'Overlord':diff==='hard'?'Warlord':'Alien') : `${diff==='elite'?'Overlord':diff==='hard'?'Warlord':'Alien'} ${i+1}`,
       isAi: true,  barriers: 0, turnsPlayed: 0, consecutiveMisses: 0,
-      strategy: aiStrategies[i] ?? 'balanced',
+      strategy: aiStrategies[i] ?? aiStrategies[0],
       shipIds: new Set([`a${i}s`, `a${i}d`]) });
   }
   // Assign goalRow to each player based on their starting position
@@ -2747,13 +2777,13 @@ function doAiTurn() {
   // ── Per-AI strategy params ───────────────────────────────────
   const strategy     = currentPlayer().strategy ?? 'balanced';
   // progressMult: how much each forward step is worth
-  const progressMult = { balanced: 12, rusher: 22, territorial: 6  }[strategy] ?? 12;
+  const progressMult = { balanced: 12, rusher: 22, territorial: 6, hard: 18, elite: 20 }[strategy] ?? 12;
   // centerBias: penalty per column away from center
-  const centerBias   = { balanced: 0.6, rusher: 0.2, territorial: 0.9 }[strategy] ?? 0.6;
+  const centerBias   = { balanced: 0.6, rusher: 0.2, territorial: 0.9, hard: 0.4, elite: 0.5 }[strategy] ?? 0.6;
   // planetBonus: stepping onto a neutral planet
-  const planetBonus  = { balanced: 55,  rusher: 22,  territorial: 100 }[strategy] ?? 55;
+  const planetBonus  = { balanced: 55,  rusher: 22,  territorial: 100, hard: 80, elite: 95 }[strategy] ?? 55;
   // dangerMult: how much to penalise being in opponent's line of fire
-  const dangerMult   = { balanced: 1.0, rusher: 0.55, territorial: 1.3 }[strategy] ?? 1.0;
+  const dangerMult   = { balanced: 1.0, rusher: 0.55, territorial: 1.3, hard: 1.4, elite: 1.7 }[strategy] ?? 1.0;
   // Per-player goal direction: 1 = moving DOWN (toward high rows), -1 = moving UP
   const myGoalRow   = currentPlayer().goalRow ?? AI_WIN_ROW;
   const aiDirection = myGoalRow > (ROWS-1)/2 ? 1 : -1;
@@ -2906,6 +2936,25 @@ function doAiTurn() {
       if (!ipal) score += strategy === 'territorial' ? 90 : 60;   // neutral → capture
       else       score += strategy === 'territorial' ? 115 : 75;   // opponent's → steal
       return score;
+    }
+
+    // ── ELITE: shoot your OWN ship to PUSH it forward (chess-like sacrifice play) ──
+    if (strategy === 'elite' && ray.hitShip && currentPlayer().shipIds.has(ray.hitShip.id)) {
+      const own = ray.hitShip;
+      if (own.id === shooter.id) return -1;
+      const ownGoalDir = (own.goalRow ?? AI_WIN_ROW) === HUMAN_WIN_ROW ? -1 : 1;
+      const pr = own.row + dr, pc = own.col + dc;
+      // never push own ship off-board (would reset it)
+      if (pc < 0 || pc >= COLS) return -1;
+      if (pr < 0 || pr >= ROWS) return -1;
+      // never push into a barrier/island/another ship (would destroy it)
+      if (shipAt(pr,pc) || isIsland(pr,pc)) return -1;
+      // only worth it if push advances ship toward its goal
+      if (dr !== ownGoalDir) return -1;
+      let s = 28 + Math.abs(own.row - own.startRow) * 1.5;
+      // bigger bonus if this push lands on the goal row
+      if (pr === (own.goalRow ?? AI_WIN_ROW)) s += 120;
+      return s;
     }
 
     // ── Hit any opponent ship ─────────────────────────────────────
@@ -4593,8 +4642,15 @@ function startGameWithConfig(numHumans, numAIs) {
   }
   document.getElementById('config-modal').classList.remove('show');
   stopMenuMusic();
-  gameConfig = { numHumans, numAIs };
+  gameConfig = { numHumans, numAIs, difficulty: window.__aiDifficulty || 'normal' };
   initGame();
+}
+window.__aiDifficulty = window.__aiDifficulty || 'normal';
+function setAiDifficulty(d) {
+  window.__aiDifficulty = d;
+  document.querySelectorAll('#cfg-difficulty .cfg-diff').forEach(b => {
+    b.classList.toggle('active', b.dataset.diff === d);
+  });
 }
 
 // ================================================================
@@ -6289,7 +6345,9 @@ function applyOnlineState(json) {
   @keyframes nt-toast{from{transform:translateY(-30px);opacity:0}to{transform:translateY(0);opacity:1}}
   .achv-toast .tt{font-size:11px;font-weight:800;letter-spacing:1.5px;opacity:.7;}
   .achv-toast .nm{font-size:14px;font-weight:700;}
-  #victory-ov .nt-card{max-width:460px;text-align:center;overflow:hidden;}
+  #victory-ov .nt-card{max-width:460px;text-align:center;overflow:hidden;display:flex;flex-direction:column;max-height:90vh;}
+  #victory-ov .nt-card > div[style*="position:relative"]{display:flex;flex-direction:column;flex:1;min-height:0;}
+  #vc-scroll{flex:1;overflow-y:auto;min-height:0;padding-bottom:6px;}
   .vc-title{font-size:42px;font-weight:900;letter-spacing:3px;margin:6px 0 2px;background:linear-gradient(180deg,#FFD54F,#FF6F00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 30px rgba(255,180,0,.4);}
   .vc-title.lose{background:linear-gradient(180deg,#EF5350,#B71C1C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .vc-sub{color:#B0BEC5;margin-bottom:18px;}
@@ -6298,12 +6356,12 @@ function applyOnlineState(json) {
   .vc-stat .v{font-size:20px;font-weight:800;color:#FFD54F;}
   .vc-stat .l{font-size:10px;color:#90A4AE;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
   .vc-achv{background:rgba(126,87,194,.15);border:1px solid rgba(126,87,194,.4);border-radius:10px;padding:8px 10px;margin:6px 0;font-size:12px;display:flex;gap:8px;align-items:center;text-align:left;}
-  .vc-btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
-  .vc-btn{flex:1;min-width:100px;padding:12px;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;letter-spacing:.5px;}
+  .vc-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;flex-shrink:0;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(11,10,37,0) 0%,rgba(11,10,37,0.95) 30%);position:relative;z-index:3;}
+  .vc-btn{flex:1;min-width:90px;padding:12px;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;letter-spacing:.5px;}
   .vc-btn.primary{background:linear-gradient(180deg,#7E57C2,#4527A0);color:#fff;}
   .vc-btn.share{background:linear-gradient(180deg,#26C6DA,#00838F);color:#fff;}
   .vc-btn.ghost{background:rgba(255,255,255,.08);color:#fff;}
-  #vc-confetti{position:absolute;inset:0;pointer-events:none;}
+  #vc-confetti{position:absolute;inset:0;pointer-events:none;z-index:1;}
 </style>
 
 <div id="daily-ov" class="nt-ov" role="dialog" aria-modal="true">
@@ -6331,10 +6389,12 @@ function applyOnlineState(json) {
   <div class="nt-card">
     <canvas id="vc-confetti"></canvas>
     <div style="position:relative;">
-      <div class="vc-title" id="vc-title">VICTORY</div>
-      <div class="vc-sub" id="vc-sub">The galaxy is yours.</div>
-      <div class="vc-stats" id="vc-stats"></div>
-      <div id="vc-achv-wrap"></div>
+      <div id="vc-scroll">
+        <div class="vc-title" id="vc-title">VICTORY</div>
+        <div class="vc-sub" id="vc-sub">The galaxy is yours.</div>
+        <div class="vc-stats" id="vc-stats"></div>
+        <div id="vc-achv-wrap"></div>
+      </div>
       <div class="vc-btns">
         <button class="vc-btn primary" onclick="vcRematch()">⚔ Rematch</button>
         <button class="vc-btn share" onclick="vcShare()">📤 Share</button>
@@ -6386,12 +6446,16 @@ function applyOnlineState(json) {
   }
   function pushToast(def){
     const wrap=document.getElementById('achv-toast-wrap'); if(!wrap)return;
+    // Limit on-screen toasts to 3 — drop the oldest to avoid pile-up that "freezes" the UI.
+    while(wrap.children.length>=3){ try{wrap.firstChild.remove();}catch(e){break;} }
     const t=document.createElement('div'); t.className='achv-toast';
     t.innerHTML='<div style="font-size:24px;">'+def.ico+'</div><div><div class="tt">'+(def.desc?'ACHIEVEMENT UNLOCKED':'REWARD')+'</div><div class="nm">'+def.name+'</div></div>';
     wrap.appendChild(t);
-    setTimeout(()=>{t.style.transition='all .3s';t.style.opacity='0';t.style.transform='translateY(-20px)';},3200);
-    setTimeout(()=>t.remove(),3600);
-    try{if(window.sfxCapture)window.sfxCapture();}catch(e){}
+    setTimeout(()=>{t.style.transition='all .3s';t.style.opacity='0';t.style.transform='translateY(-20px)';},2600);
+    setTimeout(()=>{try{t.remove();}catch(e){}},3000);
+    // NOTE: do NOT trigger sfxCapture here — sfxCapture is wrapped to also call
+    // addProgress(planet*) which calls pushToast again, causing nested toast storms
+    // and apparent UI freezes when multiple achievements unlock at once.
   }
 
   let activeCat='all';
@@ -6469,7 +6533,8 @@ function applyOnlineState(json) {
     wrap('initGame',function(){window.__match=newMatch();window.__matchAchvUnlocks=[];},null);
     wrap('sfxKnockout',function(){window.__match.shipsDestroyed++;addProgress('first_kill');addProgress('sharpshoot');addProgress('gunner');},null);
     wrap('sfxCapture',function(){window.__match.planetsCaptured++;addProgress('planet5');addProgress('planet20');addProgress('planet50');},null);
-    wrap('sfxPlanetLaser',function(){window.__match.planetsCaptured++;addProgress('planet5');addProgress('planet20');addProgress('planet50');},null);
+    // sfxPlanetLaser fires on the same capture flow as sfxCapture — track only the latter
+    // to avoid double-counting planets and triggering duplicate achievement toasts.
     wrap('sfxBarrier',function(){window.__match.barriers++;addProgress('barriers20');},null);
     wrap('showGameOver',null,function(msg){
       const isWin=(typeof msg==='string')&&(msg.includes('🎉')||/you win/i.test(msg));
