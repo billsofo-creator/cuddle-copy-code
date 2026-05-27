@@ -6529,7 +6529,8 @@ function applyOnlineState(json) {
     wrap('initGame',function(){window.__match=newMatch();window.__matchAchvUnlocks=[];},null);
     wrap('sfxKnockout',function(){window.__match.shipsDestroyed++;addProgress('first_kill');addProgress('sharpshoot');addProgress('gunner');},null);
     wrap('sfxCapture',function(){window.__match.planetsCaptured++;addProgress('planet5');addProgress('planet20');addProgress('planet50');},null);
-    wrap('sfxPlanetLaser',function(){window.__match.planetsCaptured++;addProgress('planet5');addProgress('planet20');addProgress('planet50');},null);
+    // sfxPlanetLaser fires on the same capture flow as sfxCapture — track only the latter
+    // to avoid double-counting planets and triggering duplicate achievement toasts.
     wrap('sfxBarrier',function(){window.__match.barriers++;addProgress('barriers20');},null);
     wrap('showGameOver',null,function(msg){
       const isWin=(typeof msg==='string')&&(msg.includes('🎉')||/you win/i.test(msg));
