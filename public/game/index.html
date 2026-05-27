@@ -4908,54 +4908,94 @@ const AdvTutorial = (function(){
   }
 
   // ---------- rendering ----------
+  // SVG-built visuals to mirror the real board's ships/planets/barriers.
+  function shipSVG(owner){
+    // owner 'r' = human (red, points UP toward enemy line);
+    // owner 'g' = AI (green, points DOWN toward human line) — same as real board orientation.
+    const isR = owner === 'r';
+    const main = isR ? '#E53935' : '#43A047';
+    const light = isR ? '#FFAB91' : '#A5D6A7';
+    const dark  = isR ? '#5D0000' : '#0D3D11';
+    const accent = isR ? '#80FFA8' : '#FFB070';
+    // Triangle pointing up (-1) or down (+1)
+    const pts = isR ? '18,3 32,32 18,26 4,32' : '18,33 32,4 18,10 4,4';
+    return `<svg viewBox="0 0 36 36" width="34" height="34" style="filter:drop-shadow(0 0 5px ${main});overflow:visible;">
+      <defs>
+        <linearGradient id="hull-${owner}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${light}"/><stop offset="0.55" stop-color="${main}"/><stop offset="1" stop-color="${dark}"/>
+        </linearGradient>
+      </defs>
+      <polygon points="${pts}" fill="url(#hull-${owner})" stroke="${dark}" stroke-width="1"/>
+      <circle cx="18" cy="${isR?14:22}" r="3" fill="${accent}" opacity="0.95"/>
+      <circle cx="18" cy="${isR?14:22}" r="1.4" fill="#fff"/>
+    </svg>`;
+  }
+  function planetSVG(owner){
+    const tint = owner==='r' ? '#E53935' : owner==='g' ? '#43A047' : '#FFB74D';
+    const core = owner==='r' ? '#FF7043' : owner==='g' ? '#66BB6A' : '#FFD180';
+    return `<svg viewBox="0 0 36 36" width="36" height="36" style="overflow:visible;">
+      <defs>
+        <radialGradient id="pl-${owner}" cx="0.4" cy="0.35" r="0.7">
+          <stop offset="0" stop-color="#FFF3E0"/><stop offset="0.45" stop-color="${core}"/><stop offset="1" stop-color="${tint}"/>
+        </radialGradient>
+      </defs>
+      <circle cx="18" cy="18" r="14" fill="${tint}" opacity="0.18"/>
+      <circle cx="18" cy="18" r="11" fill="url(#pl-${owner})"/>
+      <ellipse cx="18" cy="20" rx="15" ry="3.2" fill="none" stroke="${tint}" stroke-width="1.1" opacity="0.85" transform="rotate(-18 18 18)"/>
+    </svg>`;
+  }
+  function barrierSVG(){
+    return `<svg viewBox="0 0 36 36" width="34" height="34" style="overflow:visible;filter:drop-shadow(0 0 5px #AB47BC);">
+      <defs>
+        <linearGradient id="bw" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#CE93D8"/><stop offset="1" stop-color="#6A1B9A"/>
+        </linearGradient>
+        <pattern id="bh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="6" height="6" fill="url(#bw)"/><rect width="3" height="6" fill="rgba(0,0,0,0.35)"/>
+        </pattern>
+      </defs>
+      <rect x="3" y="3" width="30" height="30" rx="4" fill="url(#bh)" stroke="#AB47BC" stroke-width="1.2"/>
+    </svg>`;
+  }
+
   function render(){
     const board = document.getElementById('adv-board');
-    board.style.gridTemplateColumns = `repeat(${COLS}, 44px)`;
-    board.style.gridTemplateRows    = `repeat(${ROWS}, 44px)`;
+    board.style.gridTemplateColumns = `repeat(${COLS}, 46px)`;
+    board.style.gridTemplateRows    = `repeat(${ROWS}, 46px)`;
     board.innerHTML = '';
-    // build cells
     for (let r=0;r<ROWS;r++){
       for (let c=0;c<COLS;c++){
         const cell = state.cells[r][c];
         const el = document.createElement('div');
         el.dataset.r = r; el.dataset.c = c;
-        el.style.cssText = `position:relative;border-radius:6px;display:flex;align-items:center;
-          justify-content:center;font-size:22px;line-height:1;user-select:none;cursor:default;
-          background:rgba(255,255,255,0.025);border:1px solid rgba(140,180,200,0.10);`;
-        // edge stripes (top=green start, bottom=red start)
-        if (r===0) el.style.borderTop    = '2px solid rgba(102,187,106,0.5)';
-        if (r===ROWS-1) el.style.borderBottom = '2px solid rgba(229,57,53,0.5)';
-        // content: planet or barrier
+        el.style.cssText = `position:relative;border-radius:5px;display:flex;align-items:center;
+          justify-content:center;user-select:none;cursor:default;
+          background:radial-gradient(circle at 30% 25%, rgba(120,160,200,0.07), rgba(8,12,28,0.6));
+          border:1px solid rgba(120,160,200,0.10);
+          box-shadow:inset 0 0 6px rgba(0,0,0,0.4);`;
+        // Edge accents: top = enemy goal (green), bottom = human goal (red)
+        if (r===0) el.style.borderTop    = '2px solid rgba(67,160,71,0.7)';
+        if (r===ROWS-1) el.style.borderBottom = '2px solid rgba(229,57,53,0.7)';
         if (cell.type==='planet'){
-          const tint = cell.owner==='r' ? '#E53935' : cell.owner==='g' ? '#66BB6A' : '#90A4AE';
-          el.innerHTML = `<span style="filter:drop-shadow(0 0 6px ${tint});">🪐</span>`;
+          el.innerHTML = planetSVG(cell.owner);
         } else if (cell.type==='barrier'){
-          const tint = cell.owner==='r' ? '#E53935' : '#66BB6A';
-          el.innerHTML = `<div style="width:80%;height:80%;border-radius:4px;
-            background:repeating-linear-gradient(45deg, ${tint} 0 4px, rgba(0,0,0,0.4) 4px 8px);
-            box-shadow:0 0 8px ${tint};"></div>`;
+          el.innerHTML = barrierSVG();
         }
-        // ship on this cell
         const s = state.ships.find(s => s.r===r && s.c===c && !s.dead);
         if (s){
-          const glyph = s.o==='r' ? '🚀' : '👾';
-          const tint  = s.o==='r' ? '#E53935' : '#66BB6A';
-          el.innerHTML = `<span data-ship="${s.id}" style="font-size:24px;filter:drop-shadow(0 0 6px ${tint});
-            transition:transform 220ms ease;">${glyph}</span>`;
+          el.innerHTML = `<span data-ship="${s.id}" style="display:inline-block;transition:transform 220ms ease;">${shipSVG(s.o)}</span>`;
           if (s.id === selectedShipId){
-            el.style.background = 'rgba(255,213,79,0.25)';
-            el.style.boxShadow  = '0 0 0 2px #FFD54F inset';
+            el.style.background = 'radial-gradient(circle at 50% 50%, rgba(255,213,79,0.35), rgba(255,213,79,0.05))';
+            el.style.boxShadow  = '0 0 0 2px #FFD54F inset, 0 0 14px rgba(255,213,79,0.45)';
           }
         }
         board.appendChild(el);
       }
     }
-    // Interactive overlays per mode
     const m = STEPS[step].mode;
     if (m === 'interactive-move')  decorateMove();
     if (m === 'interactive-shoot-empty') decorateShoot();
     if (m === 'interactive-place-barrier') decorateBarrierTarget();
-    // wire clicks
     board.querySelectorAll('[data-r]').forEach(el => {
       el.addEventListener('click', onCellClick);
     });
