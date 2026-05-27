@@ -6442,12 +6442,16 @@ function applyOnlineState(json) {
   }
   function pushToast(def){
     const wrap=document.getElementById('achv-toast-wrap'); if(!wrap)return;
+    // Limit on-screen toasts to 3 — drop the oldest to avoid pile-up that "freezes" the UI.
+    while(wrap.children.length>=3){ try{wrap.firstChild.remove();}catch(e){break;} }
     const t=document.createElement('div'); t.className='achv-toast';
     t.innerHTML='<div style="font-size:24px;">'+def.ico+'</div><div><div class="tt">'+(def.desc?'ACHIEVEMENT UNLOCKED':'REWARD')+'</div><div class="nm">'+def.name+'</div></div>';
     wrap.appendChild(t);
-    setTimeout(()=>{t.style.transition='all .3s';t.style.opacity='0';t.style.transform='translateY(-20px)';},3200);
-    setTimeout(()=>t.remove(),3600);
-    try{if(window.sfxCapture)window.sfxCapture();}catch(e){}
+    setTimeout(()=>{t.style.transition='all .3s';t.style.opacity='0';t.style.transform='translateY(-20px)';},2600);
+    setTimeout(()=>{try{t.remove();}catch(e){}},3000);
+    // NOTE: do NOT trigger sfxCapture here — sfxCapture is wrapped to also call
+    // addProgress(planet*) which calls pushToast again, causing nested toast storms
+    // and apparent UI freezes when multiple achievements unlock at once.
   }
 
   let activeCat='all';
