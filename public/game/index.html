@@ -792,6 +792,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   transition: border-color .15s, color .15s;
 }
 .cfg-cancel:hover { border-color: rgba(255,255,255,0.35); color: #CFD8DC; }
+.cfg-diff {
+  flex: 1 1 0; min-width: 84px; padding: 8px 6px; border-radius: 11px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+  color: #E8EAF6; font-family: inherit; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  transition: all .15s;
+}
+.cfg-diff:hover { border-color: rgba(179,157,219,0.7); }
+.cfg-diff.active {
+  background: linear-gradient(160deg, rgba(126,87,194,0.45) 0%, rgba(69,39,160,0.55) 100%);
+  border-color: #B39DDB; box-shadow: 0 0 14px rgba(126,87,194,0.55);
+}
 
 /* ── Stats overlay ─────────────────────────────────── */
 #stats-overlay {
