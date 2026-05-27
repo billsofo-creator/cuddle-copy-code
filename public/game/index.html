@@ -2721,10 +2721,12 @@ function onUndoBarrier() {
   if (!lastHumanBarrier || phase !== 'action') return;
   if (!barriers.has(lastHumanBarrier)) { lastHumanBarrier = null; updateUI(); return; }
   barriers.delete(lastHumanBarrier);
-  // (no counter to refund — barriers are unlimited)
+  // Refund the barrier to the current player's inventory
+  const _ub = currentPlayer();
+  if (_ub) _ub.barriers = (_ub.barriers ?? 0) + 1;
   humanPlacedBarrierThisTurn = false;
   lastHumanBarrier = null;
-  setStatus('Barrier removed. You can place it again.');
+  setStatus(`Barrier removed (${_ub ? _ub.barriers : 0} available).`);
   updateUI(); render();
 }
 
