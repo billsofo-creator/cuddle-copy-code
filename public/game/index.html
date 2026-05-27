@@ -1846,11 +1846,15 @@ function setupGamePlayers(numHumans, numAIs) {
     humans.push({ name: numHumans === 1 ? 'Commander' : `Player ${i+1}`,
       isAi: false, barriers: 0, turnsPlayed: 0, consecutiveMisses: 0, shipIds: new Set([`h${i}s`, `h${i}d`]) });
   }
-  const aiStrategies = ['balanced', 'rusher', 'territorial'];
+  const diff = (gameConfig && gameConfig.difficulty) || 'normal';
+  const aiStrategiesNormal = ['balanced', 'rusher', 'territorial'];
+  const aiStrategiesHard   = ['hard', 'hard', 'hard'];
+  const aiStrategiesElite  = ['elite', 'elite', 'elite'];
+  const aiStrategies = diff === 'elite' ? aiStrategiesElite : diff === 'hard' ? aiStrategiesHard : aiStrategiesNormal;
   for (let i = 0; i < numAIs; i++) {
-    ais.push({ name: numAIs === 1 ? 'Alien' : `Alien ${i+1}`,
+    ais.push({ name: numAIs === 1 ? (diff==='elite'?'Overlord':diff==='hard'?'Warlord':'Alien') : `${diff==='elite'?'Overlord':diff==='hard'?'Warlord':'Alien'} ${i+1}`,
       isAi: true,  barriers: 0, turnsPlayed: 0, consecutiveMisses: 0,
-      strategy: aiStrategies[i] ?? 'balanced',
+      strategy: aiStrategies[i] ?? aiStrategies[0],
       shipIds: new Set([`a${i}s`, `a${i}d`]) });
   }
   // Assign goalRow to each player based on their starting position
