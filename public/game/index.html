@@ -1545,6 +1545,20 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
         <div class="cfg-desc">1 Commander vs 3 Aliens<br>8 πλοία · εσύ vs όλοι (all-vs-all)</div>
       </button>
     </div>
+
+    <div class="config-sub" style="margin-top:6px;">🧠 AI Difficulty</div>
+    <div id="cfg-difficulty" style="display:flex;gap:8px;width:100%;justify-content:center;flex-wrap:wrap;">
+      <button type="button" class="cfg-diff active" data-diff="normal" onclick="setAiDifficulty('normal')">
+        <div style="font-size:18px;">🙂</div><div style="font-weight:800;font-size:12px;">Normal</div><div style="font-size:9px;opacity:.7;">Balanced</div>
+      </button>
+      <button type="button" class="cfg-diff" data-diff="hard" onclick="setAiDifficulty('hard')">
+        <div style="font-size:18px;">😈</div><div style="font-weight:800;font-size:12px;">Hard</div><div style="font-size:9px;opacity:.7;">Aggressive</div>
+      </button>
+      <button type="button" class="cfg-diff" data-diff="elite" onclick="setAiDifficulty('elite')">
+        <div style="font-size:18px;">👹</div><div style="font-weight:800;font-size:12px;">Elite</div><div style="font-size:9px;opacity:.7;">Tactical genius</div>
+      </button>
+    </div>
+
     <button class="cfg-cancel" onclick="hideConfigModal()">✖ Cancel</button>
   </div>
   </div>
