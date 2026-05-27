@@ -2777,13 +2777,13 @@ function doAiTurn() {
   // ── Per-AI strategy params ───────────────────────────────────
   const strategy     = currentPlayer().strategy ?? 'balanced';
   // progressMult: how much each forward step is worth
-  const progressMult = { balanced: 12, rusher: 22, territorial: 6  }[strategy] ?? 12;
+  const progressMult = { balanced: 12, rusher: 22, territorial: 6, hard: 18, elite: 20 }[strategy] ?? 12;
   // centerBias: penalty per column away from center
-  const centerBias   = { balanced: 0.6, rusher: 0.2, territorial: 0.9 }[strategy] ?? 0.6;
+  const centerBias   = { balanced: 0.6, rusher: 0.2, territorial: 0.9, hard: 0.4, elite: 0.5 }[strategy] ?? 0.6;
   // planetBonus: stepping onto a neutral planet
-  const planetBonus  = { balanced: 55,  rusher: 22,  territorial: 100 }[strategy] ?? 55;
+  const planetBonus  = { balanced: 55,  rusher: 22,  territorial: 100, hard: 80, elite: 95 }[strategy] ?? 55;
   // dangerMult: how much to penalise being in opponent's line of fire
-  const dangerMult   = { balanced: 1.0, rusher: 0.55, territorial: 1.3 }[strategy] ?? 1.0;
+  const dangerMult   = { balanced: 1.0, rusher: 0.55, territorial: 1.3, hard: 1.4, elite: 1.7 }[strategy] ?? 1.0;
   // Per-player goal direction: 1 = moving DOWN (toward high rows), -1 = moving UP
   const myGoalRow   = currentPlayer().goalRow ?? AI_WIN_ROW;
   const aiDirection = myGoalRow > (ROWS-1)/2 ? 1 : -1;
