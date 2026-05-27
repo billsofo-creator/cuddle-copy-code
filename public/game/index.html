@@ -2938,6 +2938,27 @@ function doAiTurn() {
       return score;
     }
 
+    // ── ELITE: shoot your OWN ship to PUSH it forward (chess-like sacrifice play) ──
+    if (strategy === 'elite' && ray.hitShip && currentPlayer().shipIds.has(ray.hitShip.id)) {
+      const own = ray.hitShip;
+      if (own.id === shooter.id) return -1;
+      const ownGoalDir = (own.goalRow ?? AI_WIN_ROW) === HUMAN_WIN_ROW ? -1 : 1;
+      const pr = own.row + dr, pc = own.col + dc;
+      // never push own ship off-board (would reset it)
+      if (pc < 0 || pc >= COLS) return -1;
+      if (pr < 0 || pr >= ROWS) return -1;
+      // never push into a barrier/island/another ship (would destroy it)
+      if (shipAt(pr,pc) || isIsland(pr,pc)) return -1;
+      // only worth it if push advances ship toward its goal
+      if (dr !== ownGoalDir) return -1;
+      let s = 28 + Math.abs(own.row - own.startRow) * 1.5;
+      // bigger bonus if this push lands on a neutral planet OR onto the goal row
+      const k2 = `${pr},${pc}`;
+      if (islands.has(k2) && islands.get(k2) === null) s += 35;
+      if (pr === (own.goalRow ?? AI_WIN_ROW)) s += 120;
+      return s;
+    }
+
     // ── Hit any opponent ship ─────────────────────────────────────
     if (ray.hitShip && !currentPlayer().shipIds.has(ray.hitShip.id)) {
       const tgt = ray.hitShip;
