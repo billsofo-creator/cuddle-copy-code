@@ -2952,9 +2952,7 @@ function doAiTurn() {
       // only worth it if push advances ship toward its goal
       if (dr !== ownGoalDir) return -1;
       let s = 28 + Math.abs(own.row - own.startRow) * 1.5;
-      // bigger bonus if this push lands on a neutral planet OR onto the goal row
-      const k2 = `${pr},${pc}`;
-      if (islands.has(k2) && islands.get(k2) === null) s += 35;
+      // bigger bonus if this push lands on the goal row
       if (pr === (own.goalRow ?? AI_WIN_ROW)) s += 120;
       return s;
     }
