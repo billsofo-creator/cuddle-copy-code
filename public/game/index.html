@@ -1276,6 +1276,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     🎓 Tutorial
   </button>
 
+  <!-- Advanced (rule-by-rule) tutorial chip — sits just above the basic one -->
+  <button id="menu-tutorial-chip-adv" onclick="AdvTutorial.start()"
+          style="position:fixed;right:12px;bottom:52px;z-index:1500;
+                 display:none;align-items:center;gap:6px;
+                 padding:7px 11px;border-radius:999px;
+                 background:linear-gradient(180deg,#26A69A,#00695C);
+                 color:#fff;border:1px solid rgba(255,255,255,0.18);
+                 font-size:11px;font-weight:800;letter-spacing:0.5px;
+                 cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.4);">
+    📘 Rules Trainer
+  </button>
+
   <!-- (ships chip moved outside #main-menu to escape backdrop-filter containing block) -->
 
   <!-- User profile row — shown when signed in, hidden for guests -->
