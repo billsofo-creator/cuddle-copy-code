@@ -5570,6 +5570,307 @@ function applyOnlineState(json) {
 
 </script>
 
+<!-- ════════════════════════════════════════════════════════
+     ACHIEVEMENTS · DAILY REWARDS · VICTORY SCREEN  (additive)
+     ════════════════════════════════════════════════════════ -->
+<style>
+  .nt-ov{position:fixed;inset:0;background:rgba(5,8,20,0.86);backdrop-filter:blur(6px);display:none;z-index:9999;align-items:center;justify-content:center;padding:16px;animation:nt-fade .25s ease-out;}
+  .nt-ov.show{display:flex;}
+  @keyframes nt-fade{from{opacity:0}to{opacity:1}}
+  @keyframes nt-pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .nt-card{background:linear-gradient(180deg,#1a1840 0%,#0b0a25 100%);border:1px solid rgba(126,87,194,.5);border-radius:18px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;color:#E8EEF7;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 80px rgba(126,87,194,.25);animation:nt-pop .3s cubic-bezier(.2,1.4,.4,1);position:relative;}
+  .nt-card h2{margin:0 0 4px;font-size:22px;letter-spacing:1px;}
+  .nt-card .sub{color:#90A4AE;font-size:12px;margin-bottom:14px;}
+  .nt-x{position:absolute;top:14px;right:18px;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.7;z-index:2;}
+  .nt-x:hover{opacity:1;}
+  .dr-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0 14px;}
+  .dr-day{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 4px;text-align:center;font-size:11px;}
+  .dr-day .d{color:#90A4AE;font-size:10px;}
+  .dr-day .r{font-size:18px;margin:2px 0;}
+  .dr-day .v{font-weight:700;font-size:11px;color:#FFD54F;}
+  .dr-day.claimed{background:rgba(76,175,80,.15);border-color:#4CAF50;opacity:.55;}
+  .dr-day.today{background:linear-gradient(180deg,#7E57C2,#4527A0);border-color:#B39DDB;box-shadow:0 0 16px rgba(126,87,194,.6);transform:scale(1.05);}
+  .dr-day.today .d{color:#fff;}
+  .dr-claim{width:100%;padding:12px;background:linear-gradient(180deg,#FFB300,#FF6F00);border:none;border-radius:12px;color:#000;font-weight:700;font-size:15px;cursor:pointer;letter-spacing:.5px;}
+  .dr-claim:disabled{background:#37474F;color:#90A4AE;cursor:default;}
+  .achv-cats{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .achv-cat{padding:5px 10px;border-radius:14px;background:rgba(255,255,255,.06);font-size:11px;color:#B0BEC5;cursor:pointer;border:1px solid transparent;}
+  .achv-cat.active{background:#7E57C2;color:#fff;border-color:#B39DDB;}
+  .achv-list{display:flex;flex-direction:column;gap:8px;}
+  .achv-item{display:flex;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;align-items:center;}
+  .achv-item.unlocked{background:linear-gradient(90deg,rgba(76,175,80,.18),rgba(76,175,80,.05));border-color:rgba(76,175,80,.5);}
+  .achv-ico{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .achv-item.unlocked .achv-ico{background:linear-gradient(135deg,#FFB300,#FF6F00);}
+  .achv-info{flex:1;min-width:0;}
+  .achv-name{font-weight:600;font-size:13px;}
+  .achv-desc{font-size:11px;color:#90A4AE;margin-top:2px;}
+  .achv-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:6px;overflow:hidden;}
+  .achv-bar>span{display:block;height:100%;background:linear-gradient(90deg,#7E57C2,#B39DDB);transition:width .4s;}
+  #achv-toast-wrap{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+  .achv-toast{background:linear-gradient(135deg,#FFB300,#FF6F00);color:#1a1010;padding:10px 16px 10px 12px;border-radius:12px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 30px rgba(255,140,0,.5);min-width:240px;animation:nt-toast .35s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes nt-toast{from{transform:translateY(-30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .achv-toast .tt{font-size:11px;font-weight:800;letter-spacing:1.5px;opacity:.7;}
+  .achv-toast .nm{font-size:14px;font-weight:700;}
+  #victory-ov .nt-card{max-width:460px;text-align:center;overflow:hidden;}
+  .vc-title{font-size:42px;font-weight:900;letter-spacing:3px;margin:6px 0 2px;background:linear-gradient(180deg,#FFD54F,#FF6F00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 30px rgba(255,180,0,.4);}
+  .vc-title.lose{background:linear-gradient(180deg,#EF5350,#B71C1C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .vc-sub{color:#B0BEC5;margin-bottom:18px;}
+  .vc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
+  .vc-stat{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;}
+  .vc-stat .v{font-size:20px;font-weight:800;color:#FFD54F;}
+  .vc-stat .l{font-size:10px;color:#90A4AE;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+  .vc-achv{background:rgba(126,87,194,.15);border:1px solid rgba(126,87,194,.4);border-radius:10px;padding:8px 10px;margin:6px 0;font-size:12px;display:flex;gap:8px;align-items:center;text-align:left;}
+  .vc-btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+  .vc-btn{flex:1;min-width:100px;padding:12px;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;letter-spacing:.5px;}
+  .vc-btn.primary{background:linear-gradient(180deg,#7E57C2,#4527A0);color:#fff;}
+  .vc-btn.share{background:linear-gradient(180deg,#26C6DA,#00838F);color:#fff;}
+  .vc-btn.ghost{background:rgba(255,255,255,.08);color:#fff;}
+  #vc-confetti{position:absolute;inset:0;pointer-events:none;}
+</style>
+
+<div id="daily-ov" class="nt-ov" role="dialog" aria-modal="true">
+  <div class="nt-card" style="max-width:440px;">
+    <button class="nt-x" onclick="closeDaily()">✕</button>
+    <h2>🎁 Daily Reward</h2>
+    <div class="sub">Login every day to keep your streak alive!</div>
+    <div class="dr-grid" id="dr-grid"></div>
+    <div id="dr-streak" style="text-align:center;color:#B39DDB;font-size:12px;margin-bottom:10px;"></div>
+    <button id="dr-claim" class="dr-claim" onclick="claimDaily()">CLAIM REWARD</button>
+  </div>
+</div>
+
+<div id="achv-ov" class="nt-ov" role="dialog" aria-modal="true">
+  <div class="nt-card">
+    <button class="nt-x" onclick="closeAchievements()">✕</button>
+    <h2>🏆 Achievements</h2>
+    <div class="sub" id="achv-summary">0 / 0 unlocked</div>
+    <div class="achv-cats" id="achv-cats"></div>
+    <div class="achv-list" id="achv-list"></div>
+  </div>
+</div>
+
+<div id="victory-ov" class="nt-ov" role="dialog" aria-modal="true">
+  <div class="nt-card">
+    <canvas id="vc-confetti"></canvas>
+    <div style="position:relative;">
+      <div class="vc-title" id="vc-title">VICTORY</div>
+      <div class="vc-sub" id="vc-sub">The galaxy is yours.</div>
+      <div class="vc-stats" id="vc-stats"></div>
+      <div id="vc-achv-wrap"></div>
+      <div class="vc-btns">
+        <button class="vc-btn primary" onclick="vcRematch()">⚔ Rematch</button>
+        <button class="vc-btn share" onclick="vcShare()">📤 Share</button>
+        <button class="vc-btn ghost" onclick="vcMenu()">☰ Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="achv-toast-wrap"></div>
+
+<script>
+(function(){
+  'use strict';
+  const ACHV_DEFS = [
+    {id:'first_kill',  cat:'combat',   ico:'🎯', name:'First Blood',     desc:'Destroy your first enemy ship',     goal:1},
+    {id:'sharpshoot',  cat:'combat',   ico:'🔫', name:'Sharpshooter',    desc:'Destroy 10 enemy ships',            goal:10},
+    {id:'gunner',      cat:'combat',   ico:'💥', name:'Heavy Gunner',    desc:'Destroy 50 enemy ships',            goal:50},
+    {id:'untouchable', cat:'combat',   ico:'🛡️', name:'Untouchable',     desc:'Win a match without losing a ship', goal:1},
+    {id:'planet5',     cat:'conquest', ico:'🪐', name:'Planet Hunter',   desc:'Capture 5 planets total',           goal:5},
+    {id:'planet20',    cat:'conquest', ico:'🌌', name:'Star Conqueror',  desc:'Capture 20 planets total',          goal:20},
+    {id:'planet50',    cat:'conquest', ico:'👑', name:'Galactic Emperor',desc:'Capture 50 planets total',          goal:50},
+    {id:'dominator',   cat:'conquest', ico:'⚡', name:'Total Dominator', desc:'Win holding every planet',          goal:1},
+    {id:'barriers20',  cat:'conquest', ico:'⛓️', name:'Wall Builder',    desc:'Place 20 electric barriers',        goal:20},
+    {id:'first_win',   cat:'mastery',  ico:'🏆', name:'First Victory',   desc:'Win your first match',              goal:1},
+    {id:'veteran',     cat:'mastery',  ico:'🎖️', name:'Veteran',         desc:'Win 10 matches',                    goal:10},
+    {id:'legend',      cat:'mastery',  ico:'⭐', name:'Living Legend',   desc:'Win 50 matches',                    goal:50},
+    {id:'online_win',  cat:'mastery',  ico:'🌐', name:'Online Warrior',  desc:'Win 5 online matches',              goal:5},
+    {id:'speedrun',    cat:'mastery',  ico:'⏱️', name:'Speed Runner',    desc:'Win a match in under 5 minutes',    goal:1},
+    {id:'streak7',     cat:'mastery',  ico:'🔥', name:'Daily Devotion',  desc:'Claim 7 daily rewards in a row',    goal:7},
+  ];
+  const A_KEY='stellar_achv_v1', D_KEY='stellar_daily_v1';
+  function loadA(){ try{return JSON.parse(localStorage.getItem(A_KEY)||'{}');}catch(e){return {};} }
+  function saveA(s){ try{localStorage.setItem(A_KEY,JSON.stringify(s));}catch(e){} }
+  function getProgress(){const s=loadA(); s.progress=s.progress||{}; s.unlocked=s.unlocked||{}; return s;}
+  function addProgress(id,delta){
+    delta=delta||1;
+    const s=getProgress(); const def=ACHV_DEFS.find(d=>d.id===id); if(!def||s.unlocked[id])return;
+    s.progress[id]=Math.min(def.goal,(s.progress[id]||0)+delta);
+    if(s.progress[id]>=def.goal){
+      s.unlocked[id]=Date.now(); pushToast(def);
+      window.__matchAchvUnlocks=window.__matchAchvUnlocks||[]; window.__matchAchvUnlocks.push(def);
+    }
+    saveA(s); updateAchvBadge();
+  }
+  function updateAchvBadge(){
+    const s=getProgress(); const n=Object.keys(s.unlocked).length;
+    const el=document.getElementById('achv-count-badge'); if(el) el.textContent=n+'/'+ACHV_DEFS.length;
+  }
+  function pushToast(def){
+    const wrap=document.getElementById('achv-toast-wrap'); if(!wrap)return;
+    const t=document.createElement('div'); t.className='achv-toast';
+    t.innerHTML='<div style="font-size:24px;">'+def.ico+'</div><div><div class="tt">'+(def.desc?'ACHIEVEMENT UNLOCKED':'REWARD')+'</div><div class="nm">'+def.name+'</div></div>';
+    wrap.appendChild(t);
+    setTimeout(()=>{t.style.transition='all .3s';t.style.opacity='0';t.style.transform='translateY(-20px)';},3200);
+    setTimeout(()=>t.remove(),3600);
+    try{if(window.sfxCapture)window.sfxCapture();}catch(e){}
+  }
+
+  let activeCat='all';
+  window.openAchievements=function(){document.getElementById('achv-ov').classList.add('show');renderAchv();};
+  window.closeAchievements=function(){document.getElementById('achv-ov').classList.remove('show');};
+  function renderAchv(){
+    const s=getProgress();
+    const cats=[{id:'all',label:'All'},{id:'combat',label:'Combat'},{id:'conquest',label:'Conquest'},{id:'mastery',label:'Mastery'}];
+    const ce=document.getElementById('achv-cats');
+    ce.innerHTML=cats.map(c=>'<div class="achv-cat'+(c.id===activeCat?' active':'')+'" data-c="'+c.id+'">'+c.label+'</div>').join('');
+    ce.querySelectorAll('.achv-cat').forEach(b=>b.onclick=()=>{activeCat=b.dataset.c;renderAchv();});
+    const list=ACHV_DEFS.filter(d=>activeCat==='all'||d.cat===activeCat);
+    document.getElementById('achv-list').innerHTML=list.map(d=>{
+      const u=!!s.unlocked[d.id], p=s.progress[d.id]||0, pct=Math.round(Math.min(100,(p/d.goal)*100));
+      return '<div class="achv-item'+(u?' unlocked':'')+'"><div class="achv-ico">'+(u?d.ico:'🔒')+'</div><div class="achv-info"><div class="achv-name">'+d.name+'</div><div class="achv-desc">'+d.desc+'</div>'+(u?'':'<div class="achv-bar"><span style="width:'+pct+'%"></span></div><div style="font-size:10px;color:#90A4AE;margin-top:3px;">'+p+' / '+d.goal+'</div>')+'</div></div>';
+    }).join('');
+    document.getElementById('achv-summary').textContent=Object.keys(s.unlocked).length+' / '+ACHV_DEFS.length+' unlocked';
+  }
+
+  const DAILY=[
+    {ico:'🪙',label:'+100',kind:'coins',amount:100},
+    {ico:'🪙',label:'+150',kind:'coins',amount:150},
+    {ico:'⚡',label:'XP×2',kind:'xp',amount:1},
+    {ico:'🪙',label:'+250',kind:'coins',amount:250},
+    {ico:'🎟️',label:'Ship',kind:'token',amount:1},
+    {ico:'🪙',label:'+400',kind:'coins',amount:400},
+    {ico:'💎',label:'+1000',kind:'coins',amount:1000},
+  ];
+  function loadD(){try{return JSON.parse(localStorage.getItem(D_KEY)||'{}');}catch(e){return {};}}
+  function saveD(s){try{localStorage.setItem(D_KEY,JSON.stringify(s));}catch(e){}}
+  function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function yKey(){const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function getDailyState(){const s=loadD();if(!s.lastClaim)s.streak=0;else if(s.lastClaim!==todayKey()&&s.lastClaim!==yKey())s.streak=0;return s;}
+  function shouldShowDaily(){return getDailyState().lastClaim!==todayKey();}
+  function openDaily(){document.getElementById('daily-ov').classList.add('show');renderDaily();}
+  window.closeDaily=function(){document.getElementById('daily-ov').classList.remove('show');};
+  function renderDaily(){
+    const s=getDailyState();
+    const todayIdx=s.lastClaim===todayKey()?-1:(s.streak%7);
+    document.getElementById('dr-grid').innerHTML=DAILY.map((r,i)=>{
+      const claimed=(s.lastClaim===todayKey() && i<=((s.streak-1)%7)) || (s.lastClaim!==todayKey() && i<(s.streak%7));
+      const today=i===todayIdx;
+      return '<div class="dr-day'+(claimed?' claimed':'')+(today?' today':'')+'"><div class="d">Day '+(i+1)+'</div><div class="r">'+r.ico+'</div><div class="v">'+r.label+'</div></div>';
+    }).join('');
+    document.getElementById('dr-streak').textContent='🔥 Streak: '+s.streak+' day'+(s.streak===1?'':'s');
+    const btn=document.getElementById('dr-claim');
+    if(s.lastClaim===todayKey()){btn.disabled=true;btn.textContent='✓ Already Claimed Today';}
+    else{btn.disabled=false;btn.textContent='CLAIM DAY '+((s.streak%7)+1)+' REWARD';}
+  }
+  window.claimDaily=function(){
+    const s=getDailyState(); if(s.lastClaim===todayKey())return;
+    const r=DAILY[s.streak%7];
+    s.streak=(s.streak||0)+1; s.lastClaim=todayKey();
+    if(r.kind==='coins'){s.coins=(s.coins||0)+r.amount;}
+    saveD(s);
+    try{if(r.kind==='coins'&&typeof window.addCoins==='function')window.addCoins(r.amount);}catch(e){}
+    if(s.streak>=7)addProgress('streak7',7);
+    renderDaily();
+    pushToast({ico:r.ico,name:'+'+r.label+' '+(r.kind==='coins'?'coins':r.kind==='xp'?'XP boost':'unlock token'),desc:''});
+  };
+
+  function newMatch(){return{shipsDestroyed:0,planetsCaptured:0,lostShips:0,barriers:0,startedAt:Date.now()};}
+  window.__match=newMatch(); window.__matchAchvUnlocks=[];
+
+  function wrap(name,before,after){
+    const o=window[name]; if(typeof o!=='function')return;
+    window[name]=function(){
+      try{if(before)before.apply(this,arguments);}catch(e){}
+      const r=o.apply(this,arguments);
+      try{if(after)after.apply(this,arguments);}catch(e){}
+      return r;
+    };
+  }
+  function installWrappers(){
+    wrap('initGame',function(){window.__match=newMatch();window.__matchAchvUnlocks=[];},null);
+    wrap('sfxKnockout',function(){window.__match.shipsDestroyed++;addProgress('first_kill');addProgress('sharpshoot');addProgress('gunner');},null);
+    wrap('sfxCapture',function(){window.__match.planetsCaptured++;addProgress('planet5');addProgress('planet20');addProgress('planet50');},null);
+    wrap('sfxPlanetLaser',function(){window.__match.planetsCaptured++;addProgress('planet5');addProgress('planet20');addProgress('planet50');},null);
+    wrap('sfxBarrier',function(){window.__match.barriers++;addProgress('barriers20');},null);
+    wrap('showGameOver',null,function(msg){
+      const isWin=(typeof msg==='string')&&(msg.includes('🎉')||/you win/i.test(msg));
+      const m=window.__match;
+      const durSec=Math.round((Date.now()-(m.startedAt||Date.now()))/1000);
+      if(isWin){
+        addProgress('first_win');addProgress('veteran');addProgress('legend');
+        if(window.onlineMode)addProgress('online_win');
+        if(durSec<300)addProgress('speedrun');
+        if(m.lostShips===0)addProgress('untouchable');
+        try{
+          if(typeof window.countIslandsByPlayer==='function'){
+            const c=window.countIslandsByPlayer();
+            const myP=(window.allPlayers||[]).find(p=>!p.isAi);
+            if(myP){let tot=0,oth=0;c.forEach((v,p)=>{tot+=v;if(p!==myP)oth+=v;});if(oth===0&&tot>0)addProgress('dominator');}
+          }
+        }catch(e){}
+      }
+      showVictory(isWin,durSec,m);
+    });
+  }
+
+  function showVictory(isWin,durSec,m){
+    setTimeout(()=>{try{document.getElementById('go').classList.remove('show');}catch(e){}},50);
+    const t=document.getElementById('vc-title');
+    t.textContent=isWin?'VICTORY':'DEFEAT';
+    t.className='vc-title'+(isWin?'':' lose');
+    document.getElementById('vc-sub').textContent=isWin?'The galaxy bends to your will, Commander.':'The stars dim today. Regroup and try again.';
+    let planets=0;try{const c=window.countIslands?window.countIslands():{human:0};planets=c.human||0;}catch(e){}
+    const mn=Math.floor(durSec/60),sc=durSec%60;
+    document.getElementById('vc-stats').innerHTML=
+      stat('🪐',planets,'Planets')+stat('💥',m.shipsDestroyed,'Ships KO')+stat('⛓️',m.barriers,'Barriers')+stat('⏱️',mn+'m '+sc+'s','Duration');
+    const u=window.__matchAchvUnlocks||[];
+    document.getElementById('vc-achv-wrap').innerHTML=u.length?'<div style="font-size:11px;color:#B39DDB;letter-spacing:1px;margin:14px 0 4px;">★ ACHIEVEMENTS UNLOCKED</div>'+u.map(d=>'<div class="vc-achv"><span style="font-size:18px;">'+d.ico+'</span><b>'+d.name+'</b></div>').join(''):'';
+    document.getElementById('victory-ov').classList.add('show');
+    if(isWin)launchConfetti();
+  }
+  function stat(i,v,l){return '<div class="vc-stat"><div class="v">'+i+' '+v+'</div><div class="l">'+l+'</div></div>';}
+  window.vcRematch=function(){document.getElementById('victory-ov').classList.remove('show');try{if(window.initGame)window.initGame();}catch(e){}};
+  window.vcMenu=function(){document.getElementById('victory-ov').classList.remove('show');try{if(window.onIngameMenu)window.onIngameMenu();else if(window.showMenu)window.showMenu();}catch(e){}};
+  window.vcShare=async function(){
+    const txt='Just conquered the galaxy in Nebula Tactics! 🚀🪐 Can you beat me?';
+    const url=location.origin+location.pathname;
+    try{if(navigator.share){await navigator.share({title:'Nebula Tactics',text:txt,url});return;}}catch(e){}
+    try{await navigator.clipboard.writeText(txt+'\n'+url);pushToast({ico:'📋',name:'Link copied!',desc:''});}
+    catch(e){prompt('Copy this:',txt+'\n'+url);}
+  };
+
+  function launchConfetti(){
+    const cnv=document.getElementById('vc-confetti');const card=cnv.parentElement;
+    const W=cnv.width=card.offsetWidth,H=cnv.height=card.offsetHeight;
+    const ctx=cnv.getContext('2d');
+    const COLORS=['#FFD54F','#FF6F00','#7E57C2','#26C6DA','#66BB6A','#EF5350'];
+    const parts=[];
+    for(let i=0;i<90;i++)parts.push({x:W/2+(Math.random()-.5)*60,y:H/3,vx:(Math.random()-.5)*8,vy:-Math.random()*8-4,g:.25+Math.random()*.15,r:3+Math.random()*4,c:COLORS[(Math.random()*COLORS.length)|0],rot:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,life:1});
+    let frame=0;
+    function tick(){
+      frame++;ctx.clearRect(0,0,W,H);let alive=0;
+      for(const p of parts){
+        p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;
+        if(p.y>H)p.life-=.04; if(p.life<=0)continue; alive++;
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.c;ctx.fillRect(-p.r,-p.r*.4,p.r*2,p.r*.8);ctx.restore();
+      }
+      if(alive>0&&frame<360&&document.getElementById('victory-ov').classList.contains('show'))requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function boot(){
+    updateAchvBadge(); installWrappers();
+    if(shouldShowDaily())setTimeout(openDaily,800);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
+</script>
+
+
+
 <!-- ================================================================
      SECTION 17 — CLERK AUTH (ES module — runs after the game script)
      ================================================================ -->
