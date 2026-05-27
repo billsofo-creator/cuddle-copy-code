@@ -1818,12 +1818,12 @@ function setupGamePlayers(numHumans, numAIs) {
   const humans = [], ais = [];
   for (let i = 0; i < numHumans; i++) {
     humans.push({ name: numHumans === 1 ? 'Commander' : `Player ${i+1}`,
-      isAi: false, barriers: 1, turnsPlayed: 0, consecutiveMisses: 0, shipIds: new Set([`h${i}s`, `h${i}d`]) });
+      isAi: false, barriers: 0, turnsPlayed: 0, consecutiveMisses: 0, shipIds: new Set([`h${i}s`, `h${i}d`]) });
   }
   const aiStrategies = ['balanced', 'rusher', 'territorial'];
   for (let i = 0; i < numAIs; i++) {
     ais.push({ name: numAIs === 1 ? 'Alien' : `Alien ${i+1}`,
-      isAi: true,  barriers: 1, turnsPlayed: 0, consecutiveMisses: 0,
+      isAi: true,  barriers: 0, turnsPlayed: 0, consecutiveMisses: 0,
       strategy: aiStrategies[i] ?? 'balanced',
       shipIds: new Set([`a${i}s`, `a${i}d`]) });
   }
