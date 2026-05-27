@@ -2525,9 +2525,13 @@ function onShoot() {
 
 function onBarrier() {
   if (phase !== 'action') return;
-  // Unlimited barriers — no per-turn cap, no stored-count requirement
+  const cp = currentPlayer();
+  if (!cp || (cp.barriers ?? 0) <= 0) {
+    setStatus('🧱 No barriers available. Earn 1 every 2 turns (starting from turn 2).');
+    return;
+  }
   phase = 'place_barrier'; barrierOwner = 'human';
-  setStatus('Click near the edge between two cells to place a barrier wall. Cancel to skip.');
+  setStatus(`Click near the edge between two cells to place a barrier wall (${cp.barriers} left). Cancel to skip.`);
   updateUI(); render();
 }
 
