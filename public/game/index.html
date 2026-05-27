@@ -3057,6 +3057,8 @@ function aiPlaceBarrier() {
 
     if (best) {
       barriers.add(best);
+      const _ap = currentPlayer();
+      if (_ap) _ap.barriers = Math.max(0, (_ap.barriers ?? 0) - 1);
     } else {
       return;
     }
