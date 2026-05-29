@@ -6430,7 +6430,104 @@ function applyOnlineState(json) {
     {id:'speedrun',    cat:'mastery',  ico:'⏱️', name:'Speed Runner',    desc:'Win a match in under 5 minutes',    goal:1},
     {id:'streak7',     cat:'mastery',  ico:'🔥', name:'Daily Devotion',  desc:'Claim 7 daily rewards in a row',    goal:7},
   ];
-  const A_KEY='stellar_achv_v1', D_KEY='stellar_daily_v1';
+  const A_KEY='stellar_achv_v1', D_KEY='stellar_daily_v1', XP_KEY='stellar_xp_v1', TH_KEY='stellar_theme_v1';
+
+  // ── XP per achievement (scales with goal) ───────────────────
+  function xpForAchv(def){
+    const base = 25 + Math.round(Math.sqrt(def.goal||1) * 25);
+    return Math.min(400, base);
+  }
+  // Level curve: per-category levels every 250 XP (cap visually at L99)
+  function levelFromXp(xp){
+    const L = Math.floor(xp/250);
+    const next = (L+1)*250;
+    const prev = L*250;
+    return { level:L, into:xp-prev, span:next-prev, next };
+  }
+  function loadXp(){ try{return JSON.parse(localStorage.getItem(XP_KEY)||'{}');}catch(e){return {};} }
+  function saveXp(s){ try{localStorage.setItem(XP_KEY,JSON.stringify(s));}catch(e){} }
+  function getXp(){ const s=loadXp(); s.combat=s.combat||0; s.conquest=s.conquest||0; s.mastery=s.mastery||0; return s; }
+  function totalXp(){ const s=getXp(); return s.combat+s.conquest+s.mastery; }
+  function awardXp(cat, amount, label){
+    const s=getXp(); s[cat]=(s[cat]||0)+amount; saveXp(s);
+    pushToast({ico:'⚡',name:'+'+amount+' XP · '+cat.toUpperCase(),desc:label||''});
+    renderXpPanel();
+    // Theme unlock toast
+    try{ BoardThemes.checkUnlocks(); }catch(e){}
+  }
+  window.XP = { get:getXp, total:totalXp, award:awardXp, level:levelFromXp };
+
+  // ── Board themes (unlock by total XP) ───────────────────────
+  const THEMES = [
+    { id:'nebula', name:'Nebula Drift', ico:'🌌', unlockXp:0,
+      base:['#080018','#0A0428','#060015'],
+      nebulae:[
+        { x:0.25,y:0.18,r:0.55,color:'rgba(140, 50,200,0.30)' },
+        { x:0.75,y:0.30,r:0.50,color:'rgba( 40,100,220,0.25)' },
+        { x:0.30,y:0.65,r:0.55,color:'rgba(220, 60,130,0.22)' },
+        { x:0.80,y:0.82,r:0.50,color:'rgba( 80, 50,180,0.28)' },
+        { x:0.50,y:0.50,r:0.45,color:'rgba( 20, 30,100,0.22)' },
+      ] },
+    { id:'crimson', name:'Crimson Void', ico:'🔴', unlockXp:300,
+      base:['#1a0008','#2a0010','#0d0004'],
+      nebulae:[
+        { x:0.25,y:0.18,r:0.55,color:'rgba(220, 30, 60,0.32)' },
+        { x:0.75,y:0.30,r:0.50,color:'rgba(255,120, 40,0.22)' },
+        { x:0.30,y:0.65,r:0.55,color:'rgba(180,  0, 80,0.25)' },
+        { x:0.80,y:0.82,r:0.50,color:'rgba(120, 20, 40,0.30)' },
+        { x:0.50,y:0.50,r:0.45,color:'rgba( 60,  0, 20,0.28)' },
+      ] },
+    { id:'emerald', name:'Emerald Expanse', ico:'💚', unlockXp:800,
+      base:['#001a10','#002818','#000d08'],
+      nebulae:[
+        { x:0.25,y:0.18,r:0.55,color:'rgba( 40,200,140,0.28)' },
+        { x:0.75,y:0.30,r:0.50,color:'rgba( 20,180,200,0.22)' },
+        { x:0.30,y:0.65,r:0.55,color:'rgba( 80,220, 80,0.20)' },
+        { x:0.80,y:0.82,r:0.50,color:'rgba( 10,100, 80,0.28)' },
+        { x:0.50,y:0.50,r:0.45,color:'rgba(  0, 40, 30,0.30)' },
+      ] },
+    { id:'golden', name:'Golden Cosmos', ico:'🌟', unlockXp:1800,
+      base:['#1a1000','#2a1c00','#0d0800'],
+      nebulae:[
+        { x:0.25,y:0.18,r:0.55,color:'rgba(255,200, 60,0.28)' },
+        { x:0.75,y:0.30,r:0.50,color:'rgba(255,140, 20,0.22)' },
+        { x:0.30,y:0.65,r:0.55,color:'rgba(220,100,  0,0.20)' },
+        { x:0.80,y:0.82,r:0.50,color:'rgba(140, 80,  0,0.28)' },
+        { x:0.50,y:0.50,r:0.45,color:'rgba( 60, 40,  0,0.30)' },
+      ] },
+    { id:'monochrome', name:'Silver Static', ico:'⚪', unlockXp:3500,
+      base:['#08080c','#101018','#040408'],
+      nebulae:[
+        { x:0.25,y:0.18,r:0.55,color:'rgba(220,220,240,0.18)' },
+        { x:0.75,y:0.30,r:0.50,color:'rgba(160,170,200,0.15)' },
+        { x:0.30,y:0.65,r:0.55,color:'rgba(200,200,220,0.14)' },
+        { x:0.80,y:0.82,r:0.50,color:'rgba(120,130,160,0.20)' },
+        { x:0.50,y:0.50,r:0.45,color:'rgba( 60, 70, 90,0.22)' },
+      ] },
+  ];
+  function loadTheme(){ try{return localStorage.getItem(TH_KEY)||'nebula';}catch(e){return 'nebula';} }
+  function saveTheme(id){ try{localStorage.setItem(TH_KEY,id);}catch(e){} }
+  function isUnlocked(t){ return totalXp() >= t.unlockXp; }
+  window.BoardThemes = {
+    list: ()=>THEMES,
+    active: loadTheme,
+    setActive: (id)=>{ const t=THEMES.find(x=>x.id===id); if(!t||!isUnlocked(t))return false; saveTheme(id); renderThemes(); return true; },
+    getActivePalette: ()=>{ const id=loadTheme(); return THEMES.find(t=>t.id===id) || THEMES[0]; },
+    checkUnlocks: ()=>{
+      const seenKey='stellar_theme_seen_v1';
+      let seen={}; try{seen=JSON.parse(localStorage.getItem(seenKey)||'{}');}catch(e){}
+      let changed=false;
+      THEMES.forEach(t=>{
+        if(t.unlockXp>0 && isUnlocked(t) && !seen[t.id]){
+          seen[t.id]=1; changed=true;
+          pushToast({ico:t.ico,name:'Board unlocked: '+t.name,desc:'Pick it in Achievements panel'});
+        }
+      });
+      if(changed) try{localStorage.setItem(seenKey,JSON.stringify(seen));}catch(e){}
+    }
+  };
+
+
   function loadA(){ try{return JSON.parse(localStorage.getItem(A_KEY)||'{}');}catch(e){return {};} }
   function saveA(s){ try{localStorage.setItem(A_KEY,JSON.stringify(s));}catch(e){} }
   function getProgress(){const s=loadA(); s.progress=s.progress||{}; s.unlocked=s.unlocked||{}; return s;}
