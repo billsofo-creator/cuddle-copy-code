@@ -3301,22 +3301,24 @@ function render() {
   const boardX = LW, boardY = LH;
   const boardW = COLS*CELL, boardH = ROWS*CELL;
 
-  // ── Deep space base ─────────────────────────────────────────
+  // ── Deep space base (themed) ────────────────────────────────
+  const _theme = (window.BoardThemes && window.BoardThemes.getActivePalette) ? window.BoardThemes.getActivePalette() : null;
+  const _baseStops = (_theme && _theme.base) || ['#080018','#0A0428','#060015'];
   const spaceGrad = ctx.createLinearGradient(0, boardY, 0, boardY+boardH);
-  spaceGrad.addColorStop(0,    '#080018');
-  spaceGrad.addColorStop(0.5,  '#0A0428');
-  spaceGrad.addColorStop(1,    '#060015');
+  spaceGrad.addColorStop(0,    _baseStops[0]);
+  spaceGrad.addColorStop(0.5,  _baseStops[1]);
+  spaceGrad.addColorStop(1,    _baseStops[2]);
   ctx.fillStyle = spaceGrad;
   ctx.fillRect(boardX, boardY, boardW, boardH);
 
-  // ── Nebula clouds (drifting purple/blue/pink wisps) ─────────
+  // ── Nebula clouds (drifting wisps, themed) ──────────────────
   const drift = waveOffset * 0.3;
-  const nebulae = [
-    { x: 0.25, y: 0.18, r: 0.55, color: 'rgba(140, 50, 200, 0.30)' }, // purple
-    { x: 0.75, y: 0.30, r: 0.50, color: 'rgba(40, 100, 220, 0.25)'  }, // blue
-    { x: 0.30, y: 0.65, r: 0.55, color: 'rgba(220, 60, 130, 0.22)'  }, // pink
-    { x: 0.80, y: 0.82, r: 0.50, color: 'rgba(80, 50, 180, 0.28)'   }, // indigo
-    { x: 0.50, y: 0.50, r: 0.45, color: 'rgba(20, 30, 100, 0.22)'   }, // dark
+  const nebulae = (_theme && _theme.nebulae) || [
+    { x: 0.25, y: 0.18, r: 0.55, color: 'rgba(140, 50, 200, 0.30)' },
+    { x: 0.75, y: 0.30, r: 0.50, color: 'rgba(40, 100, 220, 0.25)'  },
+    { x: 0.30, y: 0.65, r: 0.55, color: 'rgba(220, 60, 130, 0.22)'  },
+    { x: 0.80, y: 0.82, r: 0.50, color: 'rgba(80, 50, 180, 0.28)'   },
+    { x: 0.50, y: 0.50, r: 0.45, color: 'rgba(20, 30, 100, 0.22)'   },
   ];
   for (const n of nebulae) {
     const nx = boardX + (n.x + Math.sin(drift*0.05 + n.y*5)*0.02) * boardW;
