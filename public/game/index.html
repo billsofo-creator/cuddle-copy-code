@@ -6564,8 +6564,49 @@ function applyOnlineState(json) {
   let activeCat='all';
   window.openAchievements=function(){document.getElementById('achv-ov').classList.add('show');renderAchv();};
   window.closeAchievements=function(){document.getElementById('achv-ov').classList.remove('show');};
+  function renderXpPanel(){
+    const el=document.getElementById('xp-panel'); if(!el)return;
+    const x=getXp(); const tot=totalXp(); const totL=levelFromXp(tot);
+    function bar(cat,ico,label){
+      const v=x[cat]||0; const L=levelFromXp(v); const pct=Math.round((L.into/L.span)*100);
+      return '<div style="margin:6px 0;"><div style="display:flex;justify-content:space-between;font-size:11px;color:#E8EEF7;margin-bottom:3px;"><span><b>'+ico+' '+label+'</b> · Lv '+L.level+'</span><span style="color:#90A4AE;">'+v+' XP</span></div><div class="achv-bar"><span style="width:'+pct+'%"></span></div></div>';
+    }
+    el.innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
+      '<div style="font-size:13px;font-weight:800;letter-spacing:1px;color:#FFD54F;">⚡ COMMANDER · Lv '+totL.level+'</div>'+
+      '<div style="font-size:11px;color:#B39DDB;">Total '+tot+' XP</div></div>'+
+      bar('combat','🎯','Combat')+bar('conquest','🪐','Conquest')+bar('mastery','🏆','Mastery');
+  }
+  function renderThemes(){
+    const el=document.getElementById('themes-panel'); if(!el)return;
+    const tot=totalXp(); const active=loadTheme();
+    el.innerHTML=
+      '<div style="font-size:11px;letter-spacing:1.5px;color:#B39DDB;margin:4px 0 6px;font-weight:800;">🎨 BOARD THEMES</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;">'+
+      THEMES.map(t=>{
+        const unlocked=tot>=t.unlockXp; const isActive=active===t.id;
+        const grad='linear-gradient(135deg,'+t.base[0]+','+t.base[1]+','+t.base[2]+')';
+        const accent=(t.nebulae[0].color)||'rgba(126,87,194,0.4)';
+        return '<div data-th="'+t.id+'" style="cursor:'+(unlocked?'pointer':'not-allowed')+';border-radius:10px;padding:8px;background:'+grad+';border:2px solid '+(isActive?'#FFD54F':'rgba(255,255,255,0.1)')+';opacity:'+(unlocked?1:0.45)+';position:relative;overflow:hidden;">'+
+          '<div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 30%, '+accent+', transparent 60%);pointer-events:none;"></div>'+
+          '<div style="position:relative;font-size:18px;">'+t.ico+'</div>'+
+          '<div style="position:relative;font-size:11px;font-weight:700;color:#fff;margin-top:2px;">'+t.name+'</div>'+
+          '<div style="position:relative;font-size:10px;color:'+(unlocked?'#FFD54F':'#FF8A80')+';margin-top:2px;">'+(unlocked?(isActive?'✓ Active':'Tap to select'):'🔒 '+t.unlockXp+' XP')+'</div>'+
+        '</div>';
+      }).join('')+'</div>';
+    el.querySelectorAll('[data-th]').forEach(c=>c.onclick=()=>{
+      const id=c.getAttribute('data-th');
+      const t=THEMES.find(x=>x.id===id);
+      if(!t)return;
+      if(tot<t.unlockXp){ pushToast({ico:'🔒',name:'Locked — need '+t.unlockXp+' XP',desc:''}); return; }
+      saveTheme(id); renderThemes();
+      pushToast({ico:t.ico,name:'Theme: '+t.name,desc:''});
+    });
+  }
   function renderAchv(){
     const s=getProgress();
+    renderXpPanel();
+    renderThemes();
     const cats=[{id:'all',label:'All'},{id:'combat',label:'Combat'},{id:'conquest',label:'Conquest'},{id:'mastery',label:'Mastery'}];
     const ce=document.getElementById('achv-cats');
     ce.innerHTML=cats.map(c=>'<div class="achv-cat'+(c.id===activeCat?' active':'')+'" data-c="'+c.id+'">'+c.label+'</div>').join('');
@@ -6573,9 +6614,10 @@ function applyOnlineState(json) {
     const list=ACHV_DEFS.filter(d=>activeCat==='all'||d.cat===activeCat);
     document.getElementById('achv-list').innerHTML=list.map(d=>{
       const u=!!s.unlocked[d.id], p=s.progress[d.id]||0, pct=Math.round(Math.min(100,(p/d.goal)*100));
-      return '<div class="achv-item'+(u?' unlocked':'')+'"><div class="achv-ico">'+(u?d.ico:'🔒')+'</div><div class="achv-info"><div class="achv-name">'+d.name+'</div><div class="achv-desc">'+d.desc+'</div>'+(u?'':'<div class="achv-bar"><span style="width:'+pct+'%"></span></div><div style="font-size:10px;color:#90A4AE;margin-top:3px;">'+p+' / '+d.goal+'</div>')+'</div></div>';
+      const xpReward=xpForAchv(d);
+      return '<div class="achv-item'+(u?' unlocked':'')+'"><div class="achv-ico">'+(u?d.ico:'🔒')+'</div><div class="achv-info"><div class="achv-name">'+d.name+' <span style="font-size:10px;color:#FFD54F;font-weight:700;">+'+xpReward+' XP</span></div><div class="achv-desc">'+d.desc+'</div>'+(u?'':'<div class="achv-bar"><span style="width:'+pct+'%"></span></div><div style="font-size:10px;color:#90A4AE;margin-top:3px;">'+p+' / '+d.goal+'</div>')+'</div></div>';
     }).join('');
-    document.getElementById('achv-summary').textContent=Object.keys(s.unlocked).length+' / '+ACHV_DEFS.length+' unlocked';
+    document.getElementById('achv-summary').textContent=Object.keys(s.unlocked).length+' / '+ACHV_DEFS.length+' unlocked · Lv '+levelFromXp(totalXp()).level;
   }
 
   const DAILY=[
