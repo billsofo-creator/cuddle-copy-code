@@ -6538,6 +6538,8 @@ function applyOnlineState(json) {
     if(s.progress[id]>=def.goal){
       s.unlocked[id]=Date.now(); pushToast(def);
       window.__matchAchvUnlocks=window.__matchAchvUnlocks||[]; window.__matchAchvUnlocks.push(def);
+      // Award XP into the achievement's category
+      try{ awardXp(def.cat, xpForAchv(def), def.name); }catch(e){}
     }
     saveA(s); updateAchvBadge();
   }
