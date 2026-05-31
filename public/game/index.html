@@ -23,7 +23,7 @@
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; }
+html, body { width: 100%; height: 100%; }
 html {
   background:
     /* slight darken so UI stays readable on bright nebulae */
@@ -31,18 +31,20 @@ html {
     /* the actual NASA-style deep-space photograph */
     url("space-bg.png") center center / cover no-repeat fixed,
     #010008;
-  min-height: 100%;
+  height: 100dvh; overflow: hidden;
 }
 body {
   background: transparent;
   background-attachment: fixed;
   color: #E8EEF7;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  min-height: 100vh;
+  height: 100dvh; max-height: 100dvh;
   display: flex; flex-direction: column; align-items: center;
-  padding: 2px 2px 8px; overflow-x: hidden;
+  padding: 2px 2px 4px; overflow: hidden;
   user-select: none; -webkit-user-select: none;
   position: relative;
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 /* — Dense CSS starfield: many sizes & colors, with twinkling — */
