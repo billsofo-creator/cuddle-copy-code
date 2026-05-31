@@ -462,10 +462,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   text-align: center; margin-bottom: 32px; position: relative; z-index: 1;
 }
 .menu-title {
-  font-size: clamp(30px, 9vw, 56px);
+  font-size: clamp(40px, 12vw, 72px);
   font-weight: 900;
   letter-spacing: clamp(0.5px, 0.3vw, 2px);
-  line-height: 1.05;
+  line-height: 1.0;
   white-space: nowrap;
   background: linear-gradient(180deg, #E1BEE7 0%, #AB47BC 45%, #4A148C 100%);
   -webkit-background-clip: text; background-clip: text;
@@ -498,19 +498,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   50%      { transform: translateY(-6px); }
 }
 .menu-tagline {
-  font-size: clamp(12px, 3.2vw, 15px);
-  letter-spacing: clamp(2px, 0.8vw, 4px);
-  color: #E1BEE7; text-transform: uppercase;
-  margin-top: 10px; font-weight: 700;
-  text-shadow: 0 0 10px rgba(225,190,231,0.55);
+  font-size: clamp(11px, 2.8vw, 13px);
+  letter-spacing: clamp(0.5px, 0.2vw, 1px);
+  color: #CFB8E8; text-transform: lowercase;
+  margin-top: 8px; font-weight: 500;
+  text-shadow: 0 0 10px rgba(225,190,231,0.35);
+  font-style: italic;
+  opacity: 0.9;
 }
-.menu-subtagline {
-  font-size: clamp(10px, 2.6vw, 12px);
-  letter-spacing: clamp(3px, 1vw, 5px);
-  color: #9575CD; text-transform: uppercase;
-  margin-top: 4px; font-weight: 600; font-style: italic;
-  opacity: 0.85;
-}
+.menu-subtagline { display: none; }
 
 
 /* Menu button list */
