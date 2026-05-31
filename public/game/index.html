@@ -5171,7 +5171,7 @@ const AdvTutorial = (function(){
       if (r===t.r && c===t.c){
         state.cells[r][c] = {type:'barrier', owner:'r'};
         render();
-        toast('🧱 Φράγμα τοποθετήθηκε! Δες τι γίνεται…');
+        toast('🧱 Barrier placed! Watch what happens…');
         busy = true;
         STEPS[step].onSuccess().then(() => { busy=false; markDone(); });
       }
