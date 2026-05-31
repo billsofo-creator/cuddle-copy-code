@@ -460,12 +460,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   text-align: center; margin-bottom: 32px; position: relative; z-index: 1;
 }
 .menu-title {
-  font-size: clamp(34px, 11vw, 64px);
+  font-size: clamp(30px, 9vw, 56px);
   font-weight: 900;
-  letter-spacing: clamp(3px, 1.2vw, 8px);
+  letter-spacing: clamp(0.5px, 0.3vw, 2px);
+  line-height: 1.05;
+  white-space: nowrap;
   background: linear-gradient(180deg, #E1BEE7 0%, #AB47BC 45%, #4A148C 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
   filter: drop-shadow(0 0 18px rgba(186,104,200,0.55))
           drop-shadow(0 4px 12px rgba(0,0,0,0.6));
   margin: 0;
