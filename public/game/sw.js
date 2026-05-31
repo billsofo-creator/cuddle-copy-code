@@ -1,5 +1,5 @@
 // Stellar Tactics service worker — caches the game shell for offline play.
-const VERSION = "v13";
+const VERSION = "v14";
 const CACHE   = `stellar-tactics-${VERSION}`;
 
 // Files to pre-cache. The HTML, the background photo, the icon, and the manifest.
