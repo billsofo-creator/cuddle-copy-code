@@ -4947,14 +4947,14 @@ const AdvTutorial = (function(){
         ships: [ {id:'r1', r:4, c:2, o:'r'}, {id:'g1', r:0, c:2, o:'g'} ],
         decor: [],
       }),
-      target: {r:2, c:2}, // exactly between them
+      target: {r:1, c:2}, // wall on bottom of (1,2) = between (1,2) and (2,2)
       hint: 'Tap the highlighted edge between the two ships.',
       onSuccess: async () => {
         // After barrier placed, demonstrate green firing → blocked
         await wait(300);
         await flashShip('g1');
         await fireBullet(0,2, 1,0, (r,c) => state.cells[r][c].type==='barrier');
-        await sparkAt(2,2);
+        await sparkAt(1,2);
         toast('🛡️ The barrier blocked the beam!');
       },
     },
