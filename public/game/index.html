@@ -5064,16 +5064,17 @@ const AdvTutorial = (function(){
     </svg>`;
   }
   function barrierSVG(){
-    return `<svg viewBox="0 0 36 36" width="34" height="34" style="overflow:visible;filter:drop-shadow(0 0 5px #AB47BC);">
+    // Render as a thin horizontal WALL sitting on the BOTTOM edge of the cell,
+    // i.e. visually between this cell and the one below it.
+    return `<svg viewBox="0 0 36 8" preserveAspectRatio="none"
+       style="position:absolute;left:-1px;right:-1px;bottom:-4px;width:calc(100% + 2px);height:9px;
+              overflow:visible;filter:drop-shadow(0 0 6px #AB47BC);pointer-events:none;z-index:3;">
       <defs>
         <linearGradient id="bw" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#CE93D8"/><stop offset="1" stop-color="#6A1B9A"/>
         </linearGradient>
-        <pattern id="bh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="6" height="6" fill="url(#bw)"/><rect width="3" height="6" fill="rgba(0,0,0,0.35)"/>
-        </pattern>
       </defs>
-      <rect x="3" y="3" width="30" height="30" rx="4" fill="url(#bh)" stroke="#AB47BC" stroke-width="1.2"/>
+      <rect x="0" y="1" width="36" height="6" rx="2" fill="url(#bw)" stroke="#AB47BC" stroke-width="0.8"/>
     </svg>`;
   }
 
