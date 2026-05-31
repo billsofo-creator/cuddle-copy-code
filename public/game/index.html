@@ -4882,7 +4882,7 @@ const AdvTutorial = (function(){
         await fireBullet(2,1, 0,1, (r,c) => occupiedShip(r,c)==='g1');
         // Wrap green back to its starting side (left edge, col 0)
         await wrapShip('g1', 2, 0);
-        toast('🌀 Σπρώχτηκε εκτός πλάγια → επέστρεψε στην αρχή.');
+        toast('🌀 Pushed off the side → returned to its start.');
         markDone();
       },
     },
