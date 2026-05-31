@@ -4889,8 +4889,8 @@ const AdvTutorial = (function(){
 
     {
       id: 'barrier',
-      title: '🧱 Κανόνας #6 — Στρατηγική με φράγματα',
-      body: 'Μπορείς να τοποθετήσεις <b>φράγμα</b> για να μπλοκάρεις ακτίνες ή να παγιδεύσεις εχθρό.<br>👉 Ένα πράσινο σκάφος ετοιμάζεται να πυροβολήσει το κόκκινο. <b>Τοποθέτησε φράγμα στο κίτρινο κελί</b> για να το προστατέψεις.',
+      title: '🧱 Rule #6 — Barrier strategy',
+      body: 'You can place a <b>barrier</b> to block beams or trap an enemy.<br>👉 A green ship is about to fire at the red one. <b>Place a barrier on the yellow cell</b> to protect it.',
       mode: 'interactive-place-barrier',
       setup: () => ({
         cells: blank(),
@@ -4898,7 +4898,7 @@ const AdvTutorial = (function(){
         decor: [],
       }),
       target: {r:2, c:2}, // exactly between them
-      hint: 'Πάτα το κίτρινο κελί ανάμεσά τους.',
+      hint: 'Tap the yellow cell between them.',
       onSuccess: async () => {
         // After barrier placed, demonstrate green firing → blocked
         await wait(300);
