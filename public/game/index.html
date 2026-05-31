@@ -345,8 +345,8 @@ button:disabled { opacity: .28; cursor: default; box-shadow: 0 2px 6px rgba(0,0,
 #main-menu {
   position: fixed; inset: 0; z-index: 200;
   display: none; flex-direction: column;
-  justify-content: center; align-items: center;
-  padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
+  justify-content: flex-start; align-items: center;
+  padding: max(6px, env(safe-area-inset-top)) 12px max(6px, env(safe-area-inset-bottom));
   background:
     radial-gradient(ellipse at 50% 30%, rgba(76,29,149,0.35) 0%, transparent 55%),
     radial-gradient(ellipse at 50% 80%, rgba(13,71,161,0.30) 0%, transparent 55%),
@@ -459,10 +459,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
 /* Menu title block */
 .menu-title-wrap {
-  text-align: center; margin-bottom: 32px; position: relative; z-index: 1;
+  text-align: center; margin-bottom: 10px; margin-top: 4px; position: relative; z-index: 1;
 }
 .menu-title {
-  font-size: clamp(40px, 12vw, 72px);
+  font-size: clamp(80px, 24vw, 144px);
   font-weight: 900;
   letter-spacing: clamp(0.5px, 0.3vw, 2px);
   line-height: 1.0;
@@ -471,8 +471,8 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 0 18px rgba(186,104,200,0.55))
-          drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 0 28px rgba(186,104,200,0.65))
+          drop-shadow(0 4px 16px rgba(0,0,0,0.7));
   margin: 0;
   animation: titlePulse 3s ease-in-out infinite;
 }
@@ -484,7 +484,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-title-icons {
   display: flex; justify-content: center; gap: 14px;
-  font-size: clamp(22px, 6vw, 32px); margin-bottom: 6px;
+  font-size: clamp(44px, 12vw, 64px); margin-bottom: 6px;
   filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
 }
 .menu-title-icons .icon {
@@ -658,9 +658,9 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
    heights up to ~820px (covers 587px preview too).
    ──────────────────────────────────────────────── */
 @media (max-height: 820px) {
-  .menu-title-wrap { margin-bottom: 10px; }
-  .menu-title-icons { font-size: 22px; gap: 10px; margin-bottom: 2px; }
-  .menu-title { font-size: clamp(34px, 10vw, 52px); letter-spacing: 0.5px; }
+  .menu-title-wrap { margin-bottom: 6px; margin-top: 2px; }
+  .menu-title-icons { font-size: 44px; gap: 10px; margin-bottom: 2px; }
+  .menu-title { font-size: clamp(68px, 20vw, 104px); letter-spacing: 0.5px; }
   .menu-tagline { font-size: 10.5px; letter-spacing: 0.3px; margin-top: 4px; }
   .menu-subtagline { display: none; }
   .menu-list { gap: 8px; max-width: 340px; }
@@ -683,9 +683,9 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   #coin-watch-ad { margin-top: 6px !important; padding: 7px !important; font-size: 11px !important; }
 }
 @media (max-height: 640px) {
-  .menu-title-wrap { margin-bottom: 6px; }
+  .menu-title-wrap { margin-bottom: 4px; margin-top: 2px; }
   .menu-title-icons { display: none; }
-  .menu-title { font-size: 30px; }
+  .menu-title { font-size: 60px; }
   .menu-tagline { font-size: 9.5px; margin-top: 2px; }
   .menu-list { gap: 6px; }
   .menu-btn { padding: 8px 10px; }
