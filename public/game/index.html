@@ -5174,7 +5174,16 @@ const AdvTutorial = (function(){
   }
   function decorateBarrierTarget(){
     const t = STEPS[step].target;
-    highlight(t.r, t.c);
+    const el = cellEl(t.r, t.c); if (!el) return;
+    el.style.cursor = 'pointer';
+    el.dataset.hot = '1';
+    // Highlight the BOTTOM EDGE of the target cell (the "wall slot")
+    const edge = document.createElement('div');
+    edge.style.cssText = `position:absolute;left:-1px;right:-1px;bottom:-4px;height:9px;
+      border-radius:3px;background:linear-gradient(180deg,#FFD54F,#FF8F00);
+      box-shadow:0 0 12px #FFD54F, 0 0 4px #FFC107 inset;
+      animation:advBurst 900ms ease-in-out infinite alternate;z-index:2;pointer-events:none;`;
+    el.appendChild(edge);
   }
 
   function onCellClick(e){
