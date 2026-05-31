@@ -4918,24 +4918,29 @@ const AdvTutorial = (function(){
     {
       id: 'wrap',
       title: '🔄 Rule #5 — Side edge? Back to start',
-      body: 'Wrap only applies to the <b>side edges</b> (left/right). If a ship is pushed off a side, it <b>returns to its starting position</b>.<br><span style="color:#90A4AE;font-size:11px;">(No wrap on top/bottom edges — forward = victory, backward = already the start.)</span>',
+      body: 'Wrap only applies to the <b>side edges</b> (left/right). If a ship is pushed off a side, it <b>returns to its original starting position</b> (its home cell), not just to the opposite column.<br><span style="color:#90A4AE;font-size:11px;">(No wrap on top/bottom edges — forward = victory, backward = already the start.)</span>',
       mode: 'auto',
       setup: () => ({
         cells: blank(),
-        // Red fires RIGHT (→) at green sitting on the right side edge.
-        // Green is pushed off the right side → wraps back to its start (col 0).
-        ships: [ {id:'r1', r:2, c:1, o:'r'}, {id:'g1', r:2, c:5, o:'g'} ],
+        // Green's home is the top-right corner (0,5). It has advanced down to (2,5).
+        // Red fires RIGHT (→) and pushes green off the side → green returns to its home (0,5).
+        ships: [
+          {id:'r1', r:2, c:1, o:'r'},
+          {id:'g1', r:2, c:5, o:'g', startR:0, startC:5},
+        ],
         decor: [],
       }),
       play: async () => {
         await flashShip('r1');
         await fireBullet(2,1, 0,1, (r,c) => occupiedShip(r,c)==='g1');
-        // Wrap green back to its starting side (left edge, col 0)
-        await wrapShip('g1', 2, 0);
-        toast('🌀 Pushed off the side → returned to its start.');
+        // Wrap green back to its actual starting cell (home), not just the opposite column.
+        const g = state.ships.find(x => x.id==='g1');
+        await wrapShip('g1', g.startR ?? 0, g.startC ?? 0);
+        toast('🌀 Pushed off the side → returned to its starting cell.');
         markDone();
       },
     },
+
 
     {
       id: 'barrier',
