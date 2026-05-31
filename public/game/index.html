@@ -597,6 +597,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn:hover .arrow { opacity: 1; transform: translateX(3px); }
 
+/* Side-by-side row for compact buttons */
+.menu-row { display: flex; gap: 10px; width: 100%; }
+.menu-row .menu-btn { flex: 1; min-width: 0; }
+
+/* Compact button variant (smaller cards) */
+.menu-btn.compact { padding: 9px 12px; gap: 9px; border-radius: 12px; }
+.menu-btn.compact .ico { width: 36px; height: 36px; border-radius: 10px; }
+.menu-btn.compact .ico svg { width: 22px; height: 22px; }
+.menu-btn.compact .lbl .l1 { font-size: 12px; letter-spacing: 0.4px; }
+.menu-btn.compact .lbl .l2 { display: none; }
+.menu-btn.compact .arrow { display: none; }
+
 /* Primary call-to-action: Play vs AI */
 .menu-btn.primary {
   background:
