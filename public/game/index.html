@@ -1233,23 +1233,6 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <span class="arrow">▶</span>
     </button>
 
-    <button class="menu-btn" onclick="openStats()">
-      <span class="ico ico-stats" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 20h16"/>
-          <rect x="5" y="12" width="3.5" height="8" rx="1" fill="white" fill-opacity="0.25"/>
-          <rect x="10.25" y="7" width="3.5" height="13" rx="1" fill="white" fill-opacity="0.25"/>
-          <rect x="15.5" y="3" width="3.5" height="17" rx="1" fill="white" fill-opacity="0.25"/>
-          <path d="M3 8l5-4 4 3 6-5" opacity="0.7"/>
-        </svg>
-      </span>
-      <span class="lbl">
-        <span class="l1">My Stats</span>
-        <span class="l2">Wins, losses &amp; galaxy leaderboard</span>
-      </span>
-      <span class="arrow">▶</span>
-    </button>
-
     <button class="menu-btn" onclick="enterOnlineLobby()">
       <span class="ico ico-online" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1267,21 +1250,32 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <span class="arrow">▶</span>
     </button>
 
-    <button class="menu-btn" onclick="openAchievements()">
-      <span class="ico" aria-hidden="true" style="background:linear-gradient(135deg,#FFB300,#FF6F00);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/>
-          <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>
-        </svg>
-      </span>
-      <span class="lbl">
-        <span class="l1">Achievements</span>
-        <span class="l2"><span id="achv-count-badge">0/0</span> unlocked · daily rewards</span>
-      </span>
-      <span class="arrow">▶</span>
-    </button>
+    <div class="menu-row">
+      <button class="menu-btn compact" onclick="openStats()">
+        <span class="ico ico-stats" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20h16"/>
+            <rect x="5" y="12" width="3.5" height="8" rx="1" fill="white" fill-opacity="0.25"/>
+            <rect x="10.25" y="7" width="3.5" height="13" rx="1" fill="white" fill-opacity="0.25"/>
+            <rect x="15.5" y="3" width="3.5" height="17" rx="1" fill="white" fill-opacity="0.25"/>
+            <path d="M3 8l5-4 4 3 6-5" opacity="0.7"/>
+          </svg>
+        </span>
+        <span class="lbl"><span class="l1">My Stats</span></span>
+      </button>
 
-    <button class="menu-btn" onclick="onMenuShowInstructions()">
+      <button class="menu-btn compact" onclick="openAchievements()">
+        <span class="ico" aria-hidden="true" style="background:linear-gradient(135deg,#FFB300,#FF6F00);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/>
+            <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>
+          </svg>
+        </span>
+        <span class="lbl"><span class="l1">Achievements</span></span>
+      </button>
+    </div>
+
+    <button class="menu-btn compact" onclick="onMenuShowInstructions()">
       <span class="ico ico-howto" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2V5z" fill="white" fill-opacity="0.18"/>
@@ -1290,14 +1284,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
           <circle cx="17" cy="8" r="2.2" fill="white" stroke="none"/>
         </svg>
       </span>
-      <span class="lbl">
-        <span class="l1">How to Play</span>
-        <span class="l2">Rules, controls & winning strategy</span>
-      </span>
-      <span class="arrow">▶</span>
+      <span class="lbl"><span class="l1">How to Play</span></span>
     </button>
 
-
+    <span id="achv-count-badge" style="display:none;">0/0</span>
   </div>
 
 
