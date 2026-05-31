@@ -5159,7 +5159,7 @@ const AdvTutorial = (function(){
         busy = true;
         fireBullet(s.r, s.c, dr, dc, () => false).then(() => {
           busy = false; render();
-          toast('💨 Η ακτίνα βγήκε από το board (δεν χτύπησε τίποτα).');
+          toast('💨 The beam flew off the board (hit nothing).');
           markDone();
         });
       }
