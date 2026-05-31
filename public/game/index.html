@@ -5141,7 +5141,7 @@ const AdvTutorial = (function(){
         const s = state.ships.find(x => x.id===selectedShipId);
         moveShipTo(s.id, r, c).then(() => {
           selectedShipId=null; render();
-          toast('✅ Καλή κίνηση!'); markDone();
+          toast('✅ Nice move!'); markDone();
         });
       }
       return;
