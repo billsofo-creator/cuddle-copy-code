@@ -462,10 +462,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   text-align: center; margin-bottom: 32px; position: relative; z-index: 1;
 }
 .menu-title {
-  font-size: clamp(30px, 9vw, 56px);
+  font-size: clamp(40px, 12vw, 72px);
   font-weight: 900;
   letter-spacing: clamp(0.5px, 0.3vw, 2px);
-  line-height: 1.05;
+  line-height: 1.0;
   white-space: nowrap;
   background: linear-gradient(180deg, #E1BEE7 0%, #AB47BC 45%, #4A148C 100%);
   -webkit-background-clip: text; background-clip: text;
@@ -498,19 +498,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   50%      { transform: translateY(-6px); }
 }
 .menu-tagline {
-  font-size: clamp(12px, 3.2vw, 15px);
-  letter-spacing: clamp(2px, 0.8vw, 4px);
-  color: #E1BEE7; text-transform: uppercase;
-  margin-top: 10px; font-weight: 700;
-  text-shadow: 0 0 10px rgba(225,190,231,0.55);
+  font-size: clamp(11px, 2.8vw, 13px);
+  letter-spacing: clamp(0.5px, 0.2vw, 1px);
+  color: #CFB8E8; text-transform: lowercase;
+  margin-top: 8px; font-weight: 500;
+  text-shadow: 0 0 10px rgba(225,190,231,0.35);
+  font-style: italic;
+  opacity: 0.9;
 }
-.menu-subtagline {
-  font-size: clamp(10px, 2.6vw, 12px);
-  letter-spacing: clamp(3px, 1vw, 5px);
-  color: #9575CD; text-transform: uppercase;
-  margin-top: 4px; font-weight: 600; font-style: italic;
-  opacity: 0.85;
-}
+.menu-subtagline { display: none; }
 
 
 /* Menu button list */
@@ -601,6 +597,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn:hover .arrow { opacity: 1; transform: translateX(3px); }
 
+/* Side-by-side row for compact buttons */
+.menu-row { display: flex; gap: 10px; width: 100%; }
+.menu-row .menu-btn { flex: 1; min-width: 0; }
+
+/* Compact button variant (smaller cards) */
+.menu-btn.compact { padding: 9px 12px; gap: 9px; border-radius: 12px; }
+.menu-btn.compact .ico { width: 36px; height: 36px; border-radius: 10px; }
+.menu-btn.compact .ico svg { width: 22px; height: 22px; }
+.menu-btn.compact .lbl .l1 { font-size: 12px; letter-spacing: 0.4px; }
+.menu-btn.compact .lbl .l2 { display: none; }
+.menu-btn.compact .arrow { display: none; }
+
 /* Primary call-to-action: Play vs AI */
 .menu-btn.primary {
   background:
@@ -652,16 +660,21 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 @media (max-height: 820px) {
   .menu-title-wrap { margin-bottom: 10px; }
   .menu-title-icons { font-size: 22px; gap: 10px; margin-bottom: 2px; }
-  .menu-title { font-size: clamp(26px, 8vw, 40px); letter-spacing: 0.5px; }
-  .menu-tagline { font-size: 11px; letter-spacing: 1.5px; margin-top: 4px; }
+  .menu-title { font-size: clamp(34px, 10vw, 52px); letter-spacing: 0.5px; }
+  .menu-tagline { font-size: 10.5px; letter-spacing: 0.3px; margin-top: 4px; }
   .menu-subtagline { display: none; }
   .menu-list { gap: 8px; max-width: 340px; }
-  .menu-btn { padding: 8px 12px; border-radius: 12px; gap: 10px; }
-  .menu-btn .ico { width: 38px; height: 38px; border-radius: 10px; }
-  .menu-btn .ico svg { width: 22px; height: 22px; }
-  .menu-btn .lbl .l1 { font-size: 12.5px; }
+  .menu-btn { padding: 10px 12px; border-radius: 12px; gap: 10px; }
+  .menu-btn .ico { width: 42px; height: 42px; border-radius: 11px; }
+  .menu-btn .ico svg { width: 24px; height: 24px; }
+  .menu-btn .lbl .l1 { font-size: 13px; }
   .menu-btn .lbl .l2 { font-size: 9px; letter-spacing: 0.4px; }
   .menu-btn .arrow { font-size: 14px; }
+  .menu-btn.compact { padding: 7px 10px; }
+  .menu-btn.compact .ico { width: 32px; height: 32px; }
+  .menu-btn.compact .ico svg { width: 19px; height: 19px; }
+  .menu-btn.compact .lbl .l1 { font-size: 11px; }
+  .menu-row { gap: 8px; }
   .badge-soon { font-size: 7.5px; padding: 2px 6px; top: 5px; right: 7px; }
   .menu-footer { margin-top: 8px; font-size: 8px; }
   #coin-widget { margin-top: 8px !important; padding: 8px 10px !important; max-width: 340px !important; }
@@ -672,14 +685,18 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 @media (max-height: 640px) {
   .menu-title-wrap { margin-bottom: 6px; }
   .menu-title-icons { display: none; }
-  .menu-title { font-size: 22px; }
-  .menu-tagline { display: none; }
+  .menu-title { font-size: 30px; }
+  .menu-tagline { font-size: 9.5px; margin-top: 2px; }
   .menu-list { gap: 6px; }
-  .menu-btn { padding: 6px 10px; }
-  .menu-btn .ico { width: 32px; height: 32px; }
-  .menu-btn .ico svg { width: 18px; height: 18px; }
+  .menu-btn { padding: 8px 10px; }
+  .menu-btn .ico { width: 34px; height: 34px; }
+  .menu-btn .ico svg { width: 20px; height: 20px; }
   .menu-btn .lbl .l2 { display: none; }
   .menu-btn .lbl .l1 { font-size: 12px; }
+  .menu-btn.compact { padding: 6px 8px; }
+  .menu-btn.compact .ico { width: 28px; height: 28px; }
+  .menu-btn.compact .ico svg { width: 16px; height: 16px; }
+  .menu-btn.compact .lbl .l1 { font-size: 10.5px; }
   #coin-widget { margin-top: 6px !important; padding: 6px 10px !important; }
 }
 
@@ -1194,8 +1211,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <span class="icon">🛸</span>
     </div>
     <h1 class="menu-title">Nebula Tactics</h1>
-    <div class="menu-tagline">Space Chess meets Tactical Arena</div>
-    <div class="menu-subtagline">Command the stars</div>
+    <div class="menu-tagline">space chess meets tactical arena · command the stars</div>
   </div>
 
   <div class="menu-list">
@@ -1217,23 +1233,6 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <span class="arrow">▶</span>
     </button>
 
-    <button class="menu-btn" onclick="openStats()">
-      <span class="ico ico-stats" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 20h16"/>
-          <rect x="5" y="12" width="3.5" height="8" rx="1" fill="white" fill-opacity="0.25"/>
-          <rect x="10.25" y="7" width="3.5" height="13" rx="1" fill="white" fill-opacity="0.25"/>
-          <rect x="15.5" y="3" width="3.5" height="17" rx="1" fill="white" fill-opacity="0.25"/>
-          <path d="M3 8l5-4 4 3 6-5" opacity="0.7"/>
-        </svg>
-      </span>
-      <span class="lbl">
-        <span class="l1">My Stats</span>
-        <span class="l2">Wins, losses &amp; galaxy leaderboard</span>
-      </span>
-      <span class="arrow">▶</span>
-    </button>
-
     <button class="menu-btn" onclick="enterOnlineLobby()">
       <span class="ico ico-online" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1251,21 +1250,32 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <span class="arrow">▶</span>
     </button>
 
-    <button class="menu-btn" onclick="openAchievements()">
-      <span class="ico" aria-hidden="true" style="background:linear-gradient(135deg,#FFB300,#FF6F00);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/>
-          <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>
-        </svg>
-      </span>
-      <span class="lbl">
-        <span class="l1">Achievements</span>
-        <span class="l2"><span id="achv-count-badge">0/0</span> unlocked · daily rewards</span>
-      </span>
-      <span class="arrow">▶</span>
-    </button>
+    <div class="menu-row">
+      <button class="menu-btn compact" onclick="openStats()">
+        <span class="ico ico-stats" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20h16"/>
+            <rect x="5" y="12" width="3.5" height="8" rx="1" fill="white" fill-opacity="0.25"/>
+            <rect x="10.25" y="7" width="3.5" height="13" rx="1" fill="white" fill-opacity="0.25"/>
+            <rect x="15.5" y="3" width="3.5" height="17" rx="1" fill="white" fill-opacity="0.25"/>
+            <path d="M3 8l5-4 4 3 6-5" opacity="0.7"/>
+          </svg>
+        </span>
+        <span class="lbl"><span class="l1">My Stats</span></span>
+      </button>
 
-    <button class="menu-btn" onclick="onMenuShowInstructions()">
+      <button class="menu-btn compact" onclick="openAchievements()">
+        <span class="ico" aria-hidden="true" style="background:linear-gradient(135deg,#FFB300,#FF6F00);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/>
+            <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>
+          </svg>
+        </span>
+        <span class="lbl"><span class="l1">Achievements</span></span>
+      </button>
+    </div>
+
+    <button class="menu-btn compact" onclick="onMenuShowInstructions()">
       <span class="ico ico-howto" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2V5z" fill="white" fill-opacity="0.18"/>
@@ -1274,14 +1284,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
           <circle cx="17" cy="8" r="2.2" fill="white" stroke="none"/>
         </svg>
       </span>
-      <span class="lbl">
-        <span class="l1">How to Play</span>
-        <span class="l2">Rules, controls & winning strategy</span>
-      </span>
-      <span class="arrow">▶</span>
+      <span class="lbl"><span class="l1">How to Play</span></span>
     </button>
 
-
+    <span id="achv-count-badge" style="display:none;">0/0</span>
   </div>
 
 
@@ -4873,8 +4879,8 @@ const AdvTutorial = (function(){
 
     {
       id: 'knockback-blocked',
-      title: '🛑 Rule #3b — Blocked knockback = KO',
-      body: 'If there is a <b>barrier or planet</b> behind the ship, it <b>cannot be pushed</b> and is <b>destroyed</b>!',
+      title: '🛑 Rule #3b — Blocked knockback',
+      body: 'If there is a <b>barrier or planet</b> behind the ship, it <b>cannot be pushed</b> and simply <b>stays in place</b>. (Ships are never destroyed by being shot.)',
       mode: 'auto',
       setup: () => ({
         cells: setCell(blank(), 1, 2, {type:'barrier', owner:'g'}),
@@ -4884,8 +4890,8 @@ const AdvTutorial = (function(){
       play: async () => {
         await flashShip('r1');
         await fireBullet(4,2, -1,0, (r,c) => occupiedShip(r,c)==='g1');
-        await koShip('g1');
-        toast('💀 The green ship was destroyed!');
+        await sparkAt(2,2);
+        toast('🛡️ Blocked by the barrier — the green ship stays put.');
         markDone();
       },
     },
@@ -4934,21 +4940,21 @@ const AdvTutorial = (function(){
     {
       id: 'barrier',
       title: '🧱 Rule #6 — Barrier strategy',
-      body: 'You can place a <b>barrier</b> to block beams or trap an enemy.<br>👉 A green ship is about to fire at the red one. <b>Place a barrier on the yellow cell</b> to protect it.',
+      body: 'A barrier is a <b>wall placed between two cells</b> (not on a cell). It blocks beams and movement across that edge.<br>👉 A green ship is about to fire at the red one. <b>Tap the highlighted edge</b> to drop a barrier between them.',
       mode: 'interactive-place-barrier',
       setup: () => ({
         cells: blank(),
         ships: [ {id:'r1', r:4, c:2, o:'r'}, {id:'g1', r:0, c:2, o:'g'} ],
         decor: [],
       }),
-      target: {r:2, c:2}, // exactly between them
-      hint: 'Tap the yellow cell between them.',
+      target: {r:1, c:2}, // wall on bottom of (1,2) = between (1,2) and (2,2)
+      hint: 'Tap the highlighted edge between the two ships.',
       onSuccess: async () => {
         // After barrier placed, demonstrate green firing → blocked
         await wait(300);
         await flashShip('g1');
         await fireBullet(0,2, 1,0, (r,c) => state.cells[r][c].type==='barrier');
-        await sparkAt(2,2);
+        await sparkAt(1,2);
         toast('🛡️ The barrier blocked the beam!');
       },
     },
@@ -5058,16 +5064,17 @@ const AdvTutorial = (function(){
     </svg>`;
   }
   function barrierSVG(){
-    return `<svg viewBox="0 0 36 36" width="34" height="34" style="overflow:visible;filter:drop-shadow(0 0 5px #AB47BC);">
+    // Render as a thin horizontal WALL sitting on the BOTTOM edge of the cell,
+    // i.e. visually between this cell and the one below it.
+    return `<svg viewBox="0 0 36 8" preserveAspectRatio="none"
+       style="position:absolute;left:-1px;right:-1px;bottom:-4px;width:calc(100% + 2px);height:9px;
+              overflow:visible;filter:drop-shadow(0 0 6px #AB47BC);pointer-events:none;z-index:3;">
       <defs>
         <linearGradient id="bw" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#CE93D8"/><stop offset="1" stop-color="#6A1B9A"/>
         </linearGradient>
-        <pattern id="bh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="6" height="6" fill="url(#bw)"/><rect width="3" height="6" fill="rgba(0,0,0,0.35)"/>
-        </pattern>
       </defs>
-      <rect x="3" y="3" width="30" height="30" rx="4" fill="url(#bh)" stroke="#AB47BC" stroke-width="1.2"/>
+      <rect x="0" y="1" width="36" height="6" rx="2" fill="url(#bw)" stroke="#AB47BC" stroke-width="0.8"/>
     </svg>`;
   }
 
@@ -5167,7 +5174,16 @@ const AdvTutorial = (function(){
   }
   function decorateBarrierTarget(){
     const t = STEPS[step].target;
-    highlight(t.r, t.c);
+    const el = cellEl(t.r, t.c); if (!el) return;
+    el.style.cursor = 'pointer';
+    el.dataset.hot = '1';
+    // Highlight the BOTTOM EDGE of the target cell (the "wall slot")
+    const edge = document.createElement('div');
+    edge.style.cssText = `position:absolute;left:-1px;right:-1px;bottom:-4px;height:9px;
+      border-radius:3px;background:linear-gradient(180deg,#FFD54F,#FF8F00);
+      box-shadow:0 0 12px #FFD54F, 0 0 4px #FFC107 inset;
+      animation:advBurst 900ms ease-in-out infinite alternate;z-index:2;pointer-events:none;`;
+    el.appendChild(edge);
   }
 
   function onCellClick(e){
