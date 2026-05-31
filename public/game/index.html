@@ -4822,7 +4822,7 @@ const AdvTutorial = (function(){
         await flashShip('r1');
         await fireBullet(4,2, -1,0, (r,c) => occupiedShip(r,c)==='g1');
         await knockShip('g1', -1, 0);
-        toast('Το πράσινο σπρώχτηκε 1 κελί πίσω.');
+        toast('The green ship was pushed back 1 cell.');
         markDone();
       },
     },
