@@ -460,12 +460,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   text-align: center; margin-bottom: 32px; position: relative; z-index: 1;
 }
 .menu-title {
-  font-size: clamp(34px, 11vw, 64px);
+  font-size: clamp(30px, 9vw, 56px);
   font-weight: 900;
-  letter-spacing: clamp(3px, 1.2vw, 8px);
+  letter-spacing: clamp(0.5px, 0.3vw, 2px);
+  line-height: 1.05;
+  white-space: nowrap;
   background: linear-gradient(180deg, #E1BEE7 0%, #AB47BC 45%, #4A148C 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
   filter: drop-shadow(0 0 18px rgba(186,104,200,0.55))
           drop-shadow(0 4px 12px rgba(0,0,0,0.6));
   margin: 0;
@@ -1149,7 +1152,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <span class="icon">♛</span>
       <span class="icon">🛸</span>
     </div>
-    <h1 class="menu-title">NEBULA TACTICS</h1>
+    <h1 class="menu-title">Nebula Tactics</h1>
     <div class="menu-tagline">Space Chess meets Tactical Arena</div>
     <div class="menu-subtagline">Command the stars</div>
   </div>
@@ -1428,14 +1431,14 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
     <div style="display:flex;gap:8px;align-items:center;">
       <button id="adv-prev" onclick="AdvTutorial.prev()" style="padding:9px 14px;border-radius:10px;
               border:1px solid rgba(128,203,196,0.4);background:transparent;color:#80CBC4;
-              font-size:12px;font-weight:700;cursor:pointer;">◀ Πίσω</button>
+              font-size:12px;font-weight:700;cursor:pointer;">◀ Back</button>
       <button id="adv-replay" onclick="AdvTutorial.replay()" style="padding:9px 12px;border-radius:10px;
               border:1px solid rgba(255,213,79,0.4);background:transparent;color:#FFD54F;
-              font-size:12px;font-weight:700;cursor:pointer;display:none;">↻ Ξανά</button>
+              font-size:12px;font-weight:700;cursor:pointer;display:none;">↻ Replay</button>
       <div style="flex:1;"></div>
       <button id="adv-next" onclick="AdvTutorial.next()" style="padding:10px 16px;border-radius:10px;
               border:none;background:linear-gradient(180deg,#26A69A,#00695C);color:#fff;
-              font-size:13px;font-weight:800;letter-spacing:0.4px;cursor:pointer;">▶ Δες τι γίνεται</button>
+              font-size:13px;font-weight:800;letter-spacing:0.4px;cursor:pointer;">▶ Watch it happen</button>
     </div>
   </div>
 </div>
@@ -1554,7 +1557,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <button class="cfg-btn" onclick="startGameWithConfig(1,3)">
         <div class="cfg-icon">🧑‍🚀  👽👽👽</div>
         <div class="cfg-name">4 Players</div>
-        <div class="cfg-desc">1 Commander vs 3 Aliens<br>8 πλοία · εσύ vs όλοι (all-vs-all)</div>
+        <div class="cfg-desc">1 Commander vs 3 Aliens<br>8 ships · you vs all (all-vs-all)</div>
       </button>
     </div>
 
@@ -1627,7 +1630,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
       <div id="stats-my-content" style="display:none;">
 
         <!-- Total across all matches -->
-        <div class="stats-section-title">📊 Σύνολο (όλα τα ματς)</div>
+        <div class="stats-section-title">📊 Total (all matches)</div>
         <div class="stats-summary" style="margin-bottom:14px;">
           <div class="stat-box">
             <div class="val" id="stat-wins">—</div>
@@ -1644,7 +1647,7 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
         </div>
 
         <!-- Online matches breakdown -->
-        <div class="stats-section-title">🌌 Online Ματς</div>
+        <div class="stats-section-title">🌌 Online Matches</div>
         <div class="stats-summary" style="margin-bottom:14px;">
           <div class="stat-box">
             <div class="val" id="stat-ol-wins">—</div>
@@ -4768,8 +4771,8 @@ const AdvTutorial = (function(){
   const STEPS = [
     {
       id: 'intro',
-      title: '👋 Καλώς ήρθες στο Rules Trainer',
-      body: 'Θα μάθεις τους κανόνες έναν-έναν με μικρά διαδραστικά παραδείγματα. <b>Πάτα ▶ για να ξεκινήσουμε.</b>',
+      title: '👋 Welcome to the Rules Trainer',
+      body: 'Learn the rules one by one through small interactive examples. <b>Press ▶ to begin.</b>',
       mode: 'auto',
       setup: () => ({
         cells: blank(),
@@ -4784,34 +4787,34 @@ const AdvTutorial = (function(){
 
     {
       id: 'move',
-      title: '🚀 Κανόνας #1 — Κίνηση',
-      body: 'Κάθε σκάφος μπορεί να μετακινηθεί <b>ένα τετράγωνο</b> σε κάθε γύρο (πάνω/κάτω/πλάι).<br>👉 Πάτα το <b>κόκκινο σκάφος</b> και μετά ένα από τα <b>κίτρινα κελιά</b>.',
+      title: '🚀 Rule #1 — Movement',
+      body: 'Each ship can move <b>one square</b> per turn (up/down/sideways).<br>👉 Tap the <b>red ship</b> and then one of the <b>yellow cells</b>.',
       mode: 'interactive-move',
       setup: () => ({
         cells: blank(),
         ships: [ {id:'r1', r:4, c:2, o:'r'} ],
         decor: [],
       }),
-      hint: 'Πάτα πρώτα το σκάφος, μετά ένα κίτρινο κελί.',
+      hint: 'Tap the ship first, then a yellow cell.',
     },
 
     {
       id: 'shoot',
-      title: '🔫 Κανόνας #2 — Πυροβολισμός',
-      body: 'Κάθε σκάφος μπορεί να ρίξει μια ακτίνα σε <b>μια από τις 4 κατευθύνσεις</b>.<br>👉 Πάτα το σκάφος και μετά ένα από τα <b>πορτοκαλί βέλη</b>.',
+      title: '🔫 Rule #2 — Shooting',
+      body: 'Each ship can fire a beam in <b>one of 4 directions</b>.<br>👉 Tap the ship and then one of the <b>orange arrows</b>.',
       mode: 'interactive-shoot-empty',
       setup: () => ({
         cells: blank(),
         ships: [ {id:'r1', r:3, c:2, o:'r'} ],
         decor: [],
       }),
-      hint: 'Πάτα το σκάφος για να εμφανιστούν τα βέλη.',
+      hint: 'Tap the ship to reveal the arrows.',
     },
 
     {
       id: 'knockback',
-      title: '💥 Κανόνας #3 — Σπρώξιμο',
-      body: 'Όταν χτυπήσεις σκάφος, αυτό <b>πάει 1 θέση πίσω</b> στη φορά της σφαίρας. Δες τι γίνεται:',
+      title: '💥 Rule #3 — Knockback',
+      body: 'When you hit a ship, it <b>gets pushed back 1 cell</b> in the bullet\'s direction. Watch:',
       mode: 'auto',
       setup: () => ({
         cells: blank(),
@@ -4822,15 +4825,15 @@ const AdvTutorial = (function(){
         await flashShip('r1');
         await fireBullet(4,2, -1,0, (r,c) => occupiedShip(r,c)==='g1');
         await knockShip('g1', -1, 0);
-        toast('Το πράσινο σπρώχτηκε 1 κελί πίσω.');
+        toast('The green ship was pushed back 1 cell.');
         markDone();
       },
     },
 
     {
       id: 'knockback-blocked',
-      title: '🛑 Κανόνας #3b — Φραγμένο σπρώξιμο = KO',
-      body: 'Αν πίσω από το σκάφος υπάρχει <b>φράγμα ή πλανήτης</b>, το σκάφος <b>δεν μπορεί να μετακινηθεί</b> και <b>καταστρέφεται</b>!',
+      title: '🛑 Rule #3b — Blocked knockback = KO',
+      body: 'If there is a <b>barrier or planet</b> behind the ship, it <b>cannot be pushed</b> and is <b>destroyed</b>!',
       mode: 'auto',
       setup: () => ({
         cells: setCell(blank(), 1, 2, {type:'barrier', owner:'g'}),
@@ -4841,15 +4844,15 @@ const AdvTutorial = (function(){
         await flashShip('r1');
         await fireBullet(4,2, -1,0, (r,c) => occupiedShip(r,c)==='g1');
         await koShip('g1');
-        toast('💀 Το πράσινο καταστράφηκε!');
+        toast('💀 The green ship was destroyed!');
         markDone();
       },
     },
 
     {
       id: 'planet',
-      title: '🪐 Κανόνας #4 — Κατάκτηση πλανήτη',
-      body: 'Αν η ακτίνα χτυπήσει <b>πλανήτη</b>, ο πλανήτης <b>γίνεται δικός σου</b>! (Οι περισσότεροι πλανήτες = πιο κοντά στη νίκη.)',
+      title: '🪐 Rule #4 — Capturing a planet',
+      body: 'If a beam hits a <b>planet</b>, that planet <b>becomes yours</b>! (More planets = closer to victory.)',
       mode: 'auto',
       setup: () => ({
         cells: setCell(blank(), 2, 2, {type:'planet', owner:'n'}),
@@ -4860,15 +4863,15 @@ const AdvTutorial = (function(){
         await flashShip('r1');
         await fireBullet(4,2, -1,0, (r,c) => state.cells[r][c].type==='planet');
         capturePlanet(2,2,'r');
-        toast('🪐 Πλανήτης κατακτήθηκε!');
+        toast('🪐 Planet captured!');
         markDone();
       },
     },
 
     {
       id: 'wrap',
-      title: '🔄 Κανόνας #5 — Πλαϊνή άκρη; Επιστροφή στην αρχή',
-      body: 'Wrap ισχύει <b>μόνο στις πλαϊνές άκρες</b> (αριστερά/δεξιά). Αν σπρωχτεί σκάφος έξω από το πλάι, <b>επιστρέφει στη θέση εκκίνησής του</b>.<br><span style="color:#90A4AE;font-size:11px;">(Στις πάνω/κάτω άκρες δεν γίνεται wrap — μπροστά = νίκη, πίσω = ήδη η αρχή.)</span>',
+      title: '🔄 Rule #5 — Side edge? Back to start',
+      body: 'Wrap only applies to the <b>side edges</b> (left/right). If a ship is pushed off a side, it <b>returns to its starting position</b>.<br><span style="color:#90A4AE;font-size:11px;">(No wrap on top/bottom edges — forward = victory, backward = already the start.)</span>',
       mode: 'auto',
       setup: () => ({
         cells: blank(),
@@ -4882,15 +4885,15 @@ const AdvTutorial = (function(){
         await fireBullet(2,1, 0,1, (r,c) => occupiedShip(r,c)==='g1');
         // Wrap green back to its starting side (left edge, col 0)
         await wrapShip('g1', 2, 0);
-        toast('🌀 Σπρώχτηκε εκτός πλάγια → επέστρεψε στην αρχή.');
+        toast('🌀 Pushed off the side → returned to its start.');
         markDone();
       },
     },
 
     {
       id: 'barrier',
-      title: '🧱 Κανόνας #6 — Στρατηγική με φράγματα',
-      body: 'Μπορείς να τοποθετήσεις <b>φράγμα</b> για να μπλοκάρεις ακτίνες ή να παγιδεύσεις εχθρό.<br>👉 Ένα πράσινο σκάφος ετοιμάζεται να πυροβολήσει το κόκκινο. <b>Τοποθέτησε φράγμα στο κίτρινο κελί</b> για να το προστατέψεις.',
+      title: '🧱 Rule #6 — Barrier strategy',
+      body: 'You can place a <b>barrier</b> to block beams or trap an enemy.<br>👉 A green ship is about to fire at the red one. <b>Place a barrier on the yellow cell</b> to protect it.',
       mode: 'interactive-place-barrier',
       setup: () => ({
         cells: blank(),
@@ -4898,21 +4901,21 @@ const AdvTutorial = (function(){
         decor: [],
       }),
       target: {r:2, c:2}, // exactly between them
-      hint: 'Πάτα το κίτρινο κελί ανάμεσά τους.',
+      hint: 'Tap the yellow cell between them.',
       onSuccess: async () => {
         // After barrier placed, demonstrate green firing → blocked
         await wait(300);
         await flashShip('g1');
         await fireBullet(0,2, 1,0, (r,c) => state.cells[r][c].type==='barrier');
         await sparkAt(2,2);
-        toast('🛡️ Το φράγμα μπλόκαρε την ακτίνα!');
+        toast('🛡️ The barrier blocked the beam!');
       },
     },
 
     {
       id: 'win',
-      title: '🏆 Κανόνας #7 — Πώς κερδίζεις',
-      body: 'Φτάνεις στη <b>γραμμή του εχθρού</b> (πάνω πλευρά) με ένα σκάφος ΚΑΙ ελέγχεις <b>περισσότερους πλανήτες</b> από τον αντίπαλο. Δες:',
+      title: '🏆 Rule #7 — How you win',
+      body: 'Reach the <b>enemy line</b> (top side) with a ship AND control <b>more planets</b> than your opponent. Watch:',
       mode: 'auto',
       setup: () => ({
         cells: setCell(setCell(blank(), 2, 1, {type:'planet',owner:'r'}), 2, 4, {type:'planet',owner:'r'}),
@@ -4934,8 +4937,8 @@ const AdvTutorial = (function(){
 
     {
       id: 'done',
-      title: '🎉 Έτοιμος, Commander!',
-      body: 'Γνωρίζεις πλέον όλους τους κανόνες. Πάτα <b>Τέλος</b> για να γυρίσεις στο μενού και να ξεκινήσεις παιχνίδι.',
+      title: '🎉 Ready, Commander!',
+      body: 'You now know every rule. Press <b>Finish</b> to return to the menu and start a game.',
       mode: 'auto',
       setup: () => ({
         cells: blank(),
@@ -4970,7 +4973,7 @@ const AdvTutorial = (function(){
     done = true;
     const nb = document.getElementById('adv-next');
     if (nb){
-      nb.textContent = (step === STEPS.length-1) ? 'Τέλος ✓' : 'Επόμενο ▶';
+      nb.textContent = (step === STEPS.length-1) ? 'Finish ✓' : 'Next ▶';
       nb.style.background = 'linear-gradient(180deg,#66BB6A,#2E7D32)';
     }
     document.getElementById('adv-replay').style.display = 'inline-block';
@@ -5141,7 +5144,7 @@ const AdvTutorial = (function(){
         const s = state.ships.find(x => x.id===selectedShipId);
         moveShipTo(s.id, r, c).then(() => {
           selectedShipId=null; render();
-          toast('✅ Καλή κίνηση!'); markDone();
+          toast('✅ Nice move!'); markDone();
         });
       }
       return;
@@ -5159,7 +5162,7 @@ const AdvTutorial = (function(){
         busy = true;
         fireBullet(s.r, s.c, dr, dc, () => false).then(() => {
           busy = false; render();
-          toast('💨 Η ακτίνα βγήκε από το board (δεν χτύπησε τίποτα).');
+          toast('💨 The beam flew off the board (hit nothing).');
           markDone();
         });
       }
@@ -5171,7 +5174,7 @@ const AdvTutorial = (function(){
       if (r===t.r && c===t.c){
         state.cells[r][c] = {type:'barrier', owner:'r'};
         render();
-        toast('🧱 Φράγμα τοποθετήθηκε! Δες τι γίνεται…');
+        toast('🧱 Barrier placed! Watch what happens…');
         busy = true;
         STEPS[step].onSuccess().then(() => { busy=false; markDone(); });
       }
@@ -5290,9 +5293,9 @@ const AdvTutorial = (function(){
     if (state.decor) state.decor.forEach(d => { state.cells[d.r][d.c] = {type:d.type, owner:d.owner}; });
     render();
     if (s.mode === 'auto'){
-      nb.textContent = '▶ Δες τι γίνεται';
+      nb.textContent = '▶ Watch it happen';
     } else {
-      nb.textContent = 'Επόμενο ▶';
+      nb.textContent = 'Next ▶';
       nb.style.background = 'linear-gradient(180deg,#455A64,#263238)';
       // For interactive steps user must act first; mark not-done until success.
     }
@@ -5309,7 +5312,7 @@ const AdvTutorial = (function(){
     }
     if (!done && s.mode !== 'auto'){
       // user hasn't completed the interactive task yet
-      toast(s.hint || 'Πρέπει πρώτα να ολοκληρώσεις την ενέργεια.');
+      toast(s.hint || 'You must complete the action first.');
       return;
     }
     if (step >= STEPS.length-1){ end(); return; }
