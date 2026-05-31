@@ -5290,9 +5290,9 @@ const AdvTutorial = (function(){
     if (state.decor) state.decor.forEach(d => { state.cells[d.r][d.c] = {type:d.type, owner:d.owner}; });
     render();
     if (s.mode === 'auto'){
-      nb.textContent = '▶ Δες τι γίνεται';
+      nb.textContent = '▶ Watch it happen';
     } else {
-      nb.textContent = 'Επόμενο ▶';
+      nb.textContent = 'Next ▶';
       nb.style.background = 'linear-gradient(180deg,#455A64,#263238)';
       // For interactive steps user must act first; mark not-done until success.
     }
