@@ -5309,7 +5309,7 @@ const AdvTutorial = (function(){
     }
     if (!done && s.mode !== 'auto'){
       // user hasn't completed the interactive task yet
-      toast(s.hint || 'Πρέπει πρώτα να ολοκληρώσεις την ενέργεια.');
+      toast(s.hint || 'You must complete the action first.');
       return;
     }
     if (step >= STEPS.length-1){ end(); return; }
