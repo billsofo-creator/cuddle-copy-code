@@ -4879,8 +4879,8 @@ const AdvTutorial = (function(){
 
     {
       id: 'knockback-blocked',
-      title: '🛑 Rule #3b — Blocked knockback = KO',
-      body: 'If there is a <b>barrier or planet</b> behind the ship, it <b>cannot be pushed</b> and is <b>destroyed</b>!',
+      title: '🛑 Rule #3b — Blocked knockback',
+      body: 'If there is a <b>barrier or planet</b> behind the ship, it <b>cannot be pushed</b> and simply <b>stays in place</b>. (Ships are never destroyed by being shot.)',
       mode: 'auto',
       setup: () => ({
         cells: setCell(blank(), 1, 2, {type:'barrier', owner:'g'}),
@@ -4890,8 +4890,8 @@ const AdvTutorial = (function(){
       play: async () => {
         await flashShip('r1');
         await fireBullet(4,2, -1,0, (r,c) => occupiedShip(r,c)==='g1');
-        await koShip('g1');
-        toast('💀 The green ship was destroyed!');
+        await sparkAt(2,2);
+        toast('🛡️ Blocked by the barrier — the green ship stays put.');
         markDone();
       },
     },
