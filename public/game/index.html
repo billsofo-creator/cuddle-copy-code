@@ -581,8 +581,32 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #43A047 50%, #0d3a14 100%); }
 .menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFECB3 0%, #FB8C00 50%, #4a1a00 100%); }
-.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #1E88E5 50%, #0a2a4a 100%); }
+.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #FFCDD2 0%, #E53935 45%, #4a0a14 100%); }
 .menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #E1BEE7 0%, #8E24AA 50%, #2a0a3a 100%); }
+
+/* Live pulse dot on online multiplayer icon */
+.menu-btn .ico-online::before { z-index: 1; }
+.menu-btn .live-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 10px #66BB6A;
+  animation: liveBlink 1.4s ease-in-out infinite;
+  z-index: 3;
+}
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.8); }
+}
+.menu-btn .live-badge {
+  display: inline-block; font-size: 8px; font-weight: 900;
+  letter-spacing: 1.2px; padding: 2px 6px; border-radius: 4px;
+  background: linear-gradient(180deg,#EF5350,#C62828);
+  color: #fff; margin-left: 6px; vertical-align: middle;
+  box-shadow: 0 2px 6px rgba(198,40,40,0.5);
+  animation: liveBlink 1.4s ease-in-out infinite;
+}
+
 
 
 .menu-btn .lbl {
