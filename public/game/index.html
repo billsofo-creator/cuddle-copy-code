@@ -459,15 +459,15 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
 /* Menu title block */
 .menu-title-wrap {
-  text-align: center; margin-bottom: 10px; margin-top: 4px; position: relative; z-index: 1;
+  text-align: center; margin-bottom: 6px; margin-top: 2px; position: relative; z-index: 1;
 }
 .menu-title {
   font-size: clamp(80px, 24vw, 144px);
   font-weight: 900;
   letter-spacing: clamp(0.5px, 0.3vw, 2px);
-  line-height: 1.0;
+  line-height: 0.95;
   white-space: nowrap;
-  background: linear-gradient(180deg, #E1BEE7 0%, #AB47BC 45%, #4A148C 100%);
+  background: linear-gradient(180deg, #F3E5F5 0%, #CE93D8 30%, #AB47BC 60%, #4A148C 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
@@ -483,8 +483,8 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
                      drop-shadow(0 4px 12px rgba(0,0,0,0.6)); }
 }
 .menu-title-icons {
-  display: flex; justify-content: center; gap: 14px;
-  font-size: clamp(44px, 12vw, 64px); margin-bottom: 6px;
+  display: flex; justify-content: center; gap: 12px;
+  font-size: clamp(36px, 10vw, 52px); margin-bottom: 2px;
   filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
 }
 .menu-title-icons .icon {
@@ -498,10 +498,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   50%      { transform: translateY(-6px); }
 }
 .menu-tagline {
-  font-size: clamp(11px, 2.8vw, 13px);
+  font-size: clamp(10px, 2.4vw, 12px);
   letter-spacing: clamp(0.5px, 0.2vw, 1px);
   color: #CFB8E8; text-transform: lowercase;
-  margin-top: 8px; font-weight: 500;
+  margin-top: 4px; font-weight: 500;
   text-shadow: 0 0 10px rgba(225,190,231,0.35);
   font-style: italic;
   opacity: 0.9;
@@ -511,9 +511,10 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
 /* Menu button list */
 .menu-list {
-  display: flex; flex-direction: column; gap: 14px;
-  width: 100%; max-width: 320px; position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 10px;
+  width: 100%; max-width: 340px; position: relative; z-index: 1;
 }
+
 .menu-btn {
   position: relative;
   display: flex; align-items: center; gap: 14px;
@@ -580,8 +581,32 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 }
 .menu-btn .ico-ai     { background: radial-gradient(circle at 30% 25%, #C8FACC 0%, #43A047 50%, #0d3a14 100%); }
 .menu-btn .ico-stats  { background: radial-gradient(circle at 30% 25%, #FFECB3 0%, #FB8C00 50%, #4a1a00 100%); }
-.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #B3E5FC 0%, #1E88E5 50%, #0a2a4a 100%); }
+.menu-btn .ico-online { background: radial-gradient(circle at 30% 25%, #FFCDD2 0%, #E53935 45%, #4a0a14 100%); }
 .menu-btn .ico-howto  { background: radial-gradient(circle at 30% 25%, #E1BEE7 0%, #8E24AA 50%, #2a0a3a 100%); }
+
+/* Live pulse dot on online multiplayer icon */
+.menu-btn .ico-online::before { z-index: 1; }
+.menu-btn .live-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 10px #66BB6A;
+  animation: liveBlink 1.4s ease-in-out infinite;
+  z-index: 3;
+}
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.8); }
+}
+.menu-btn .live-badge {
+  display: inline-block; font-size: 8px; font-weight: 900;
+  letter-spacing: 1.2px; padding: 2px 6px; border-radius: 4px;
+  background: linear-gradient(180deg,#EF5350,#C62828);
+  color: #fff; margin-left: 6px; vertical-align: middle;
+  box-shadow: 0 2px 6px rgba(198,40,40,0.5);
+  animation: liveBlink 1.4s ease-in-out infinite;
+}
+
 
 
 .menu-btn .lbl {
@@ -658,14 +683,14 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
    heights up to ~820px (covers 587px preview too).
    ──────────────────────────────────────────────── */
 @media (max-height: 820px) {
-  .menu-title-wrap { margin-bottom: 6px; margin-top: 2px; }
-  .menu-title-icons { font-size: 44px; gap: 10px; margin-bottom: 2px; }
+  .menu-title-wrap { margin-bottom: 4px; margin-top: 0; }
+  .menu-title-icons { font-size: 38px; gap: 10px; margin-bottom: 0; }
   .menu-title { font-size: clamp(68px, 20vw, 104px); letter-spacing: 0.5px; }
-  .menu-tagline { font-size: 10.5px; letter-spacing: 0.3px; margin-top: 4px; }
+  .menu-tagline { font-size: 10.5px; letter-spacing: 0.3px; margin-top: 2px; }
   .menu-subtagline { display: none; }
-  .menu-list { gap: 8px; max-width: 340px; }
-  .menu-btn { padding: 10px 12px; border-radius: 12px; gap: 10px; }
-  .menu-btn .ico { width: 42px; height: 42px; border-radius: 11px; }
+  .menu-list { gap: 7px; max-width: 340px; }
+  .menu-btn { padding: 9px 12px; border-radius: 12px; gap: 10px; }
+  .menu-btn .ico { width: 40px; height: 40px; border-radius: 11px; }
   .menu-btn .ico svg { width: 24px; height: 24px; }
   .menu-btn .lbl .l1 { font-size: 13px; }
   .menu-btn .lbl .l2 { font-size: 9px; letter-spacing: 0.4px; }
@@ -674,21 +699,21 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   .menu-btn.compact .ico { width: 32px; height: 32px; }
   .menu-btn.compact .ico svg { width: 19px; height: 19px; }
   .menu-btn.compact .lbl .l1 { font-size: 11px; }
-  .menu-row { gap: 8px; }
+  .menu-row { gap: 7px; }
   .badge-soon { font-size: 7.5px; padding: 2px 6px; top: 5px; right: 7px; }
-  .menu-footer { margin-top: 8px; font-size: 8px; }
-  #coin-widget { margin-top: 8px !important; padding: 8px 10px !important; max-width: 340px !important; }
+  .menu-footer { margin-top: 6px; font-size: 8px; }
+  #coin-widget { margin-top: 6px !important; padding: 7px 10px !important; max-width: 340px !important; }
   #coin-widget .coin-pip { height: 4px; }
   #coin-widget [id="coin-pips"] { margin-top: 5px !important; }
-  #coin-watch-ad { margin-top: 6px !important; padding: 7px !important; font-size: 11px !important; }
+  #coin-watch-ad { margin-top: 5px !important; padding: 6px !important; font-size: 11px !important; }
 }
 @media (max-height: 640px) {
-  .menu-title-wrap { margin-bottom: 4px; margin-top: 2px; }
+  .menu-title-wrap { margin-bottom: 2px; margin-top: 0; }
   .menu-title-icons { display: none; }
-  .menu-title { font-size: 60px; }
-  .menu-tagline { font-size: 9.5px; margin-top: 2px; }
-  .menu-list { gap: 6px; }
-  .menu-btn { padding: 8px 10px; }
+  .menu-title { font-size: 64px; line-height: 0.9; }
+  .menu-tagline { font-size: 9.5px; margin-top: 1px; }
+  .menu-list { gap: 5px; }
+  .menu-btn { padding: 7px 10px; }
   .menu-btn .ico { width: 34px; height: 34px; }
   .menu-btn .ico svg { width: 20px; height: 20px; }
   .menu-btn .lbl .l2 { display: none; }
@@ -697,8 +722,11 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
   .menu-btn.compact .ico { width: 28px; height: 28px; }
   .menu-btn.compact .ico svg { width: 16px; height: 16px; }
   .menu-btn.compact .lbl .l1 { font-size: 10.5px; }
-  #coin-widget { margin-top: 6px !important; padding: 6px 10px !important; }
+  .menu-btn .live-badge { font-size: 7px; padding: 1px 4px; margin-left: 4px; }
+  .menu-btn .live-dot { width: 7px; height: 7px; top: 4px; right: 4px; }
+  #coin-widget { margin-top: 5px !important; padding: 6px 10px !important; }
 }
+
 
 /* ════════════════════════════════════════════════════════
    INSTRUCTIONS modal — opened from menu's "How to Play"
@@ -1235,20 +1263,25 @@ body:has(#main-menu.show) #menu-ships-chip { display: inline-flex !important; }
 
     <button class="menu-btn" onclick="enterOnlineLobby()">
       <span class="ico ico-online" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <ellipse cx="12" cy="12" rx="4" ry="9"/>
-          <path d="M3 12h18"/>
-          <path d="M3.5 8.5h17"/><path d="M3.5 15.5h17"/>
-          <circle cx="18" cy="6" r="2" fill="#ff5252" stroke="none"/>
+        <span class="live-dot"></span>
+        <svg viewBox="0 0 32 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Left player -->
+          <circle cx="6" cy="8" r="3" fill="white" fill-opacity="0.95" stroke="none"/>
+          <path d="M1 19c0-3 2.2-5 5-5s5 2 5 5" fill="white" fill-opacity="0.55" stroke="none"/>
+          <!-- Right player -->
+          <circle cx="26" cy="8" r="3" fill="white" fill-opacity="0.95" stroke="none"/>
+          <path d="M21 19c0-3 2.2-5 5-5s5 2 5 5" fill="white" fill-opacity="0.55" stroke="none"/>
+          <!-- VS bolt connector -->
+          <path d="M14 6l-2 5h3l-2 5 5-6h-3l2-4z" fill="#FFD54F" stroke="#FF8F00" stroke-width="0.8"/>
         </svg>
       </span>
       <span class="lbl">
-        <span class="l1">Online Multiplayer</span>
-        <span class="l2">Battle a friend across the galaxy — live</span>
+        <span class="l1">Online Multiplayer<span class="live-badge">LIVE</span></span>
+        <span class="l2">Battle a friend across the galaxy</span>
       </span>
       <span class="arrow">▶</span>
     </button>
+
 
     <div class="menu-row">
       <button class="menu-btn compact" onclick="openStats()">
